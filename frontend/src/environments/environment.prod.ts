@@ -1,5 +1,5 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://YOUR-DEPLOYED-BACKEND-URL/api',
-  socketUrl: 'https://YOUR-DEPLOYED-BACKEND-URL',
+  apiUrl: 'https://campushub-mean-platform.onrender.com/api',
+  socketUrl: 'https://campushub-mean-platform.onrender.com',
 };

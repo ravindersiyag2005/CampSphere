@@ -226,16 +226,6 @@ PORT=5000
 
 ---
 
-## 🛣️ Roadmap
-
-- [ ] Mobile-responsive layout (PWA)
-- [ ] Push notifications via Web Push API
-- [ ] Lost & Found module
-- [ ] Email verification on registration
-- [ ] Deployment guide (Railway + Vercel)
-
----
-
 ## 🤝 Contributing
 
 Contributions are welcome! Feel free to:

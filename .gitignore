@@ -1,0 +1,32 @@
+# ─── Environment files ───────────────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+
+# ─── Node / npm ──────────────────────────────────────────────────────────────
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ─── Uploads (user-generated files — keep the placeholder only) ──────────────
+backend/uploads/*
+!backend/uploads/.gitkeep
+
+# ─── Angular build output ────────────────────────────────────────────────────
+frontend/dist/
+frontend/.angular/cache/
+
+# ─── OS artefacts ────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ─── IDE / editor ────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.suo
+*.user
+
+# ─── Logs ────────────────────────────────────────────────────────────────────
+logs/
+*.log

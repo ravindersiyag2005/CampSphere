@@ -12,7 +12,22 @@ const server = http.createServer(app);
 
 connectDB();
 
-app.use(cors({ origin: process.env.CLIENT_URL || '*', credentials: true }));
+// Allow localhost (dev) + deployed Vercel URL (prod) — both from CLIENT_URL
+const allowedOrigins = [
+  'http://localhost:4200',
+  ...(process.env.CLIENT_URL ? [process.env.CLIENT_URL] : []),
+];
+
+const corsOptions = {
+  origin: (origin, callback) => {
+    // Allow requests with no origin (e.g. curl, Render health checks)
+    if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+    callback(new Error(`CORS: origin ${origin} not allowed`));
+  },
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
@@ -32,7 +47,7 @@ app.use((err, req, res, next) => {
 });
 
 const io = new Server(server, {
-  cors: { origin: process.env.CLIENT_URL || '*', credentials: true },
+  cors: corsOptions,
 });
 initChatSocket(io);
 

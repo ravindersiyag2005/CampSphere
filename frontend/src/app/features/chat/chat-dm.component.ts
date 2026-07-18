@@ -102,6 +102,15 @@ interface DmMsg {
     .composer-prompt { font-family: var(--font-mono); color: var(--coral); font-size: 13px; white-space: nowrap; text-shadow: 0 0 6px rgba(243,85,136,0.4); }
     .composer-input { flex: 1; font-family: var(--font-mono); background: rgba(15,17,26,0.8); border-color: rgba(0,242,254,0.2); color: #e2e8f0; }
     .composer-input::placeholder { color: rgba(0,242,254,0.35); }
+
+    @media (max-width: 640px) {
+      .chat-header { padding: 10px 16px; gap: 8px; }
+      .messages { padding: 16px; gap: 10px; }
+      .msg-row { max-width: 85%; }
+      .composer { flex-wrap: wrap; padding: 10px 16px; gap: 8px; }
+      .composer-prompt { width: 100%; margin-bottom: 2px; }
+      .composer-input { flex: 1; min-width: 0; }
+    }
   `],
 })
 export class ChatDmComponent implements OnInit, OnDestroy, AfterViewChecked, AfterViewInit {

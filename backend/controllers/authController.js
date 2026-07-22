@@ -38,7 +38,10 @@ exports.register = async (req, res) => {
     }
     
     let role = 'student';
-    if (adminCode === 'CAMPIQ_ADMIN_2026') {
+    // Fallback to the default code if the environment variable is missing (useful for local development)
+    const adminSecret = process.env.ADMIN_SECRET_CODE || 'CAMPIQ_ADMIN_2026';
+    
+    if (adminCode && adminCode === adminSecret) {
       role = 'admin';
     }
 

@@ -26,7 +26,7 @@ export class PostService {
   }
 
   addComment(postId: string, text: string): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/posts/${postId}/comment`, { text });
+    return this.http.post<any>(`${this.apiUrl}/posts/${postId}/comments`, { text });
   }
 
   deletePost(postId: string): Observable<any> {

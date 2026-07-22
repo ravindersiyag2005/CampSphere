@@ -14,7 +14,7 @@ import { StaggerInDirective } from '../../shared/components/stagger-in.directive
     <div class="page page--chat">
       <div class="page-header">
         <div>
-          <div class="eyebrow">💬 Anonymous Chat</div>
+          <div class="eyebrow">Anonymous Chat</div>
           <h1>Talk freely, stay anonymous</h1>
           <p class="text-muted">
             Everyone sees you as a random alias, not your real name. Messages are moderated —
@@ -50,7 +50,7 @@ import { StaggerInDirective } from '../../shared/components/stagger-in.directive
       <h2 class="section-title mt-24">Group rooms</h2>
       <div class="grid grid-cols-3 mt-8" appStaggerIn *ngIf="!loadingRooms(); else loadingTpl">
         <a class="card card-hover card-accent-violet room-card" *ngFor="let r of rooms()" [routerLink]="['/chat/room', r._id]">
-          <span class="room-emoji">💬</span>
+          <svg class="room-card-icon" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
           <h3>{{ r.name }}</h3>
           <span class="badge badge-violet">{{ r.subject }}</span>
           <p class="text-sm text-muted mt-8">{{ r.description || 'Anonymous group chat' }}</p>
@@ -71,7 +71,18 @@ import { StaggerInDirective } from '../../shared/components/stagger-in.directive
     .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; align-items: end; }
     .section-title { font-size: 18px; }
     .room-card { text-decoration: none; }
-    .room-emoji { font-size: 26px; }
+    .room-card-icon {
+      width: 20px;
+      height: 20px;
+      stroke: var(--violet);
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      fill: none;
+      margin-bottom: 8px;
+      filter: drop-shadow(0 0 4px rgba(0, 242, 254, 0.4));
+      display: inline-block;
+    }
   `],
 })
 export class ChatRoomsComponent implements OnInit {

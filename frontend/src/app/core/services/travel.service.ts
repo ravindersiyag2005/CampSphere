@@ -23,4 +23,13 @@ export class TravelService {
   remove(id: string) {
     return this.http.delete<any>(`${this.base}/${id}`);
   }
+  acceptRequest(postId: string, userId: string) {
+    return this.http.post<any>(`${this.base}/${postId}/accept/${userId}`, {});
+  }
+  declineRequest(postId: string, userId: string) {
+    return this.http.post<any>(`${this.base}/${postId}/decline/${userId}`, {});
+  }
+  removeParticipant(postId: string, userId: string) {
+    return this.http.post<any>(`${this.base}/${postId}/remove-participant/${userId}`, {});
+  }
 }

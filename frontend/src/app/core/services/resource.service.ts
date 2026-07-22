@@ -30,4 +30,12 @@ export class ResourceService {
   downloadUrl(id: string) {
     return `${this.base}/${id}/download`;
   }
+
+  update(id: string, data: any) {
+    return this.http.put<any>(`${this.base}/${id}`, data);
+  }
+
+  delete(id: string) {
+    return this.http.delete<any>(`${this.base}/${id}`);
+  }
 }

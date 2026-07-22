@@ -15,6 +15,8 @@ const travelPostSchema = new mongoose.Schema(
     seatsAvailable: { type: Number, default: 0 },
     maxPeople: { type: Number, default: 1 },
     peopleJoined: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+    requestedUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+    declinedUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     costSharing: { type: String, default: '' },
     notes: { type: String, default: '' },
     status: { type: String, enum: ['open', 'full', 'completed'], default: 'open' },

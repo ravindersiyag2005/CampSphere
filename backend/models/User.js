@@ -12,6 +12,8 @@ const userSchema = new mongoose.Schema(
     isBlocked: { type: Boolean, default: false },
     blockedReason: { type: String, default: '' },
     avatarColor: { type: String, default: '#6C5CE7' },
+    avatarUrl: { type: String, default: '' },
+    lastCheckedPhotoholic: { type: Date, default: Date.now },
   },
   { timestamps: true }
 );

@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ElementRef, ViewChild, signal, AfterViewChecked, AfterViewInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, ElementRef, ViewChild, signal, AfterViewChecked, AfterViewInit, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -13,6 +13,9 @@ interface DmMsg {
   text: string;
   createdAt: string;
   mine: boolean;
+  attachmentUrl?: string;
+  attachmentType?: 'image' | 'pdf' | 'none';
+  fileName?: string;
 }
 
 @Component({
@@ -29,28 +32,50 @@ interface DmMsg {
         <span class="path-sep">/</span>
         <span class="room-path">private-dm</span>
         <div class="who-am-i">
-          <span class="lock">🔒</span> both sides stay anonymous
+          <svg class="who-am-i-icon" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> both sides stay anonymous
         </div>
       </div>
 
       <div class="messages" #scrollBox>
         <div class="empty-state" *ngIf="messages().length === 0">
-          <span class="emoji">🕶️</span>
+          <svg class="empty-state-icon" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
           <p class="boot-text">$ secure channel established. say hello.<span class="term-cursor"></span></p>
         </div>
 
         <div class="msg-row" [class.mine]="m.mine" *ngFor="let m of messages()">
           <div class="bubble">
-            <div class="bubble-text"><span class="prompt-sign">{{ m.mine ? '>' : '$' }}</span>{{ m.text }}</div>
+            <div class="bubble-text" *ngIf="m.text"><span class="prompt-sign">{{ m.mine ? '>' : '$' }}</span>{{ m.text }}</div>
+            <div class="bubble-attachment" *ngIf="m.attachmentUrl">
+              <div *ngIf="m.attachmentType === 'image'" class="attachment-image-wrap">
+                <a [href]="m.attachmentUrl" target="_blank">
+                  <img [src]="m.attachmentUrl" class="attachment-image" alt="Uploaded file" />
+                </a>
+              </div>
+              <div *ngIf="m.attachmentType === 'pdf'" class="attachment-pdf-wrap">
+                <a [href]="m.attachmentUrl" target="_blank" class="pdf-link">
+                  <span class="pdf-icon">📄</span>
+                  <span class="pdf-name">{{ m.fileName || 'document.pdf' }}</span>
+                </a>
+              </div>
+            </div>
             <div class="bubble-time">{{ m.createdAt | date:'shortTime' }}</div>
           </div>
         </div>
       </div>
 
+      <div class="file-preview-bar" *ngIf="selectedFile">
+        <span class="preview-info">📎 {{ selectedFile.name }} ({{ selectedFile.size }} bytes)</span>
+        <button type="button" class="clear-file-btn" (click)="clearFile()">✕</button>
+      </div>
+
       <form class="composer" (ngSubmit)="send()">
         <span class="composer-prompt">anon&#64;dm:~$</span>
+        <input type="file" #fileInput (change)="onFileSelected($event)" accept="image/*,application/pdf" style="display: none;" />
+        <button class="attach-btn" type="button" (click)="fileInput.click()">📎</button>
         <input class="input composer-input" [(ngModel)]="draft" name="draft" placeholder="type a message…" autocomplete="off" />
-        <button class="btn btn-primary" type="submit" [disabled]="!draft.trim()">Send ↵</button>
+        <button class="btn btn-primary" type="submit" [disabled]="(!draft.trim() && !selectedFile) || uploadingFile">
+          {{ uploadingFile ? 'Uploading…' : 'Send ↵' }}
+        </button>
       </form>
     </div>
   `,
@@ -76,6 +101,30 @@ interface DmMsg {
 
     .messages { position: relative; z-index: 1; flex: 1; overflow-y: auto; padding: 20px 24px; display: flex; flex-direction: column; gap: 12px; }
     .boot-text { font-family: var(--font-mono); color: var(--violet); }
+    .who-am-i-icon {
+      width: 14px;
+      height: 14px;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      fill: none;
+      display: inline-block;
+      vertical-align: middle;
+      margin-right: 4px;
+    }
+    .empty-state-icon {
+      width: 42px;
+      height: 42px;
+      stroke: var(--violet);
+      stroke-width: 1.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      fill: none;
+      margin: 0 auto 12px;
+      display: block;
+      filter: drop-shadow(0 0 8px rgba(0, 242, 254, 0.4));
+    }
 
     .msg-row { display: flex; max-width: 70%; }
     .msg-row.mine { align-self: flex-end; }
@@ -102,6 +151,25 @@ interface DmMsg {
     .composer-prompt { font-family: var(--font-mono); color: var(--coral); font-size: 13px; white-space: nowrap; text-shadow: 0 0 6px rgba(243,85,136,0.4); }
     .composer-input { flex: 1; font-family: var(--font-mono); background: rgba(15,17,26,0.8); border-color: rgba(0,242,254,0.2); color: #e2e8f0; }
     .composer-input::placeholder { color: rgba(0,242,254,0.35); }
+    .file-preview-bar {
+      position: relative; z-index: 1;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 6px 24px; background: rgba(0, 242, 254, 0.08);
+      border-top: 1px solid rgba(0,242,254,0.12);
+      font-family: var(--font-mono); font-size: 12px; color: var(--violet);
+    }
+    .clear-file-btn { background: none; border: none; color: var(--coral); cursor: pointer; font-size: 13px; }
+    .attach-btn { background: none; border: none; color: var(--text-muted); font-size: 18px; cursor: pointer; transition: color 0.15s; }
+    .attach-btn:hover { color: var(--violet); }
+    .bubble-attachment { margin-top: 8px; border-radius: var(--radius-sm); overflow: hidden; }
+    .attachment-image { max-width: 100%; max-height: 250px; border-radius: var(--radius-sm); border: 1px solid rgba(255,255,255,0.08); display: block; }
+    .attachment-pdf-wrap { display: inline-block; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: var(--radius-sm); padding: 8px 12px; }
+    .pdf-link { display: flex; align-items: center; gap: 8px; color: var(--violet); text-decoration: none; font-size: 13px; }
+    .pdf-link:hover { text-decoration: underline; }
+
+    @media (max-width: 880px) {
+      .chat-page { height: calc(100dvh - 60px); }
+    }
 
     @media (max-width: 640px) {
       .chat-header { padding: 10px 16px; gap: 8px; }
@@ -127,7 +195,8 @@ export class ChatDmComponent implements OnInit, OnDestroy, AfterViewChecked, Aft
     private chatService: ChatService,
     private socketService: SocketService,
     private toast: ToastService,
-    private anim: AnimationService
+    private anim: AnimationService,
+    private ngZone: NgZone
   ) {}
 
   ngOnInit() {
@@ -151,13 +220,29 @@ export class ChatDmComponent implements OnInit, OnDestroy, AfterViewChecked, Aft
         const existingIdx = list.findIndex(m => m._id === msg.clientId);
         if (existingIdx !== -1) {
           const newList = [...list];
-          newList[existingIdx] = { ...newList[existingIdx], _id: msg._id, senderAlias: msg.senderAlias };
+          newList[existingIdx] = { 
+            ...newList[existingIdx], 
+            _id: msg._id, 
+            senderAlias: msg.senderAlias,
+            attachmentUrl: msg.attachmentUrl,
+            attachmentType: msg.attachmentType,
+            fileName: msg.fileName,
+          };
           return newList;
         }
 
         return [
           ...list,
-          { _id: msg._id, senderAlias: msg.senderAlias, text: msg.text, createdAt: msg.createdAt, mine: false },
+          { 
+            _id: msg._id, 
+            senderAlias: msg.senderAlias, 
+            text: msg.text, 
+            createdAt: msg.createdAt, 
+            mine: false,
+            attachmentUrl: msg.attachmentUrl,
+            attachmentType: msg.attachmentType,
+            fileName: msg.fileName,
+          },
         ];
       });
       this.shouldScroll = true;
@@ -173,7 +258,9 @@ export class ChatDmComponent implements OnInit, OnDestroy, AfterViewChecked, Aft
   }
 
   ngAfterViewInit() {
-    this.startRain();
+    this.ngZone.runOutsideAngular(() => {
+      this.startRain();
+    });
   }
 
   private startRain() {
@@ -182,6 +269,10 @@ export class ChatDmComponent implements OnInit, OnDestroy, AfterViewChecked, Aft
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
+    const isMobile = window.innerWidth <= 880;
+    const spacing = isMobile ? 32 : 16;
+    const fpsInterval = 1000 / (isMobile ? 15 : 30); // 15 FPS on mobile, 30 FPS on desktop
+
     const chars = '01アイウエオカキクケコ$#{}<>/';
     let columns = 0;
     let drops: number[] = [];
@@ -189,27 +280,34 @@ export class ChatDmComponent implements OnInit, OnDestroy, AfterViewChecked, Aft
     const resize = () => {
       canvas.width = canvas.clientWidth;
       canvas.height = canvas.clientHeight;
-      columns = Math.floor(canvas.width / 16);
-      drops = new Array(columns).fill(0).map(() => Math.floor(Math.random() * -40));
+      columns = Math.floor(canvas.width / spacing);
+      drops = new Array(columns).fill(0).map(() => Math.floor(Math.random() * -30));
     };
     resize();
     window.addEventListener('resize', resize);
     (this as any)._rainResize = resize;
 
-    const draw = () => {
+    let lastTime = 0;
+
+    const draw = (timestamp: number) => {
+      this.rainFrame = requestAnimationFrame(draw);
+
+      const elapsed = timestamp - lastTime;
+      if (elapsed < fpsInterval) return;
+      lastTime = timestamp - (elapsed % fpsInterval);
+
       ctx.fillStyle = 'rgba(5, 6, 10, 0.18)';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       ctx.font = '14px "JetBrains Mono", monospace';
       for (let i = 0; i < columns; i++) {
         const char = chars[Math.floor(Math.random() * chars.length)];
-        ctx.fillStyle = Math.random() > 0.94 ? '#eafffe' : 'rgba(243, 85, 136, 0.5)';
-        ctx.fillText(char, i * 16, drops[i] * 16);
+        ctx.fillStyle = Math.random() > 0.94 ? '#eafffe' : (isMobile ? 'rgba(243, 85, 136, 0.4)' : 'rgba(243, 85, 136, 0.5)');
+        ctx.fillText(char, i * spacing, drops[i] * 16);
         if (drops[i] * 16 > canvas.height && Math.random() > 0.975) drops[i] = 0;
         drops[i]++;
       }
-      this.rainFrame = requestAnimationFrame(draw);
     };
-    draw();
+    this.rainFrame = requestAnimationFrame(draw);
   }
 
   ngAfterViewChecked() {
@@ -227,16 +325,79 @@ export class ChatDmComponent implements OnInit, OnDestroy, AfterViewChecked, Aft
   }
 
   draft = '';
+  selectedFile: File | null = null;
+  uploadingFile = false;
+
+  onFileSelected(event: any) {
+    const file = event.target.files?.[0];
+    if (file) {
+      this.selectedFile = file;
+    }
+  }
+
+  clearFile() {
+    this.selectedFile = null;
+  }
 
   send() {
-    if (!this.draft.trim()) return;
+    if (!this.draft.trim() && !this.selectedFile) return;
     const clientId = 'local-' + Date.now();
-    this.messages.update((list) => [
-      ...list,
-      { _id: clientId, senderAlias: 'You', text: this.draft.trim(), createdAt: new Date().toISOString(), mine: true },
-    ]);
-    this.socketService.instance.emit('sendDM', { conversationId: this.conversationId, text: this.draft.trim(), clientId });
-    this.draft = '';
-    this.shouldScroll = true;
+
+    if (this.selectedFile) {
+      this.uploadingFile = true;
+      const fd = new FormData();
+      fd.append('file', this.selectedFile);
+
+      this.chatService.uploadAttachment(fd).subscribe({
+        next: (res) => {
+          this.messages.update((list) => [
+            ...list,
+            { 
+              _id: clientId, 
+              senderAlias: 'You', 
+              text: this.draft.trim(), 
+              createdAt: new Date().toISOString(), 
+              mine: true,
+              attachmentUrl: res.fileUrl,
+              attachmentType: res.fileType,
+              fileName: res.fileName,
+            },
+          ]);
+          this.socketService.instance.emit('sendDM', {
+            conversationId: this.conversationId,
+            text: this.draft.trim(),
+            clientId,
+            attachmentUrl: res.fileUrl,
+            attachmentType: res.fileType,
+            fileName: res.fileName,
+          });
+          this.selectedFile = null;
+          this.draft = '';
+          this.uploadingFile = false;
+          this.shouldScroll = true;
+        },
+        error: (err) => {
+          this.toast.error('Failed to upload attachment.');
+          this.uploadingFile = false;
+        }
+      });
+    } else {
+      this.messages.update((list) => [
+        ...list,
+        { _id: clientId, senderAlias: 'You', text: this.draft.trim(), createdAt: new Date().toISOString(), mine: true },
+      ]);
+      this.socketService.instance.emit('sendDM', { conversationId: this.conversationId, text: this.draft.trim(), clientId });
+      this.draft = '';
+      this.shouldScroll = true;
+    }
+  }
+  colorFor(alias: string): string {
+    if (!alias) return '#6C5CE7';
+    const palette = ['#FFFFFF', '#6C5CE7', '#00B8A9', '#FF6B5B', '#FFC857', '#2EC4B6', '#F94892', '#4361EE'];
+    let hash = 0;
+    for (let i = 0; i < alias.length; i++) {
+      hash = alias.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    return palette[Math.abs(hash) % palette.length];
   }
 }

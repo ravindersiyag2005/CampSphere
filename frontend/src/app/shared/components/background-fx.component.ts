@@ -1,4 +1,4 @@
-import { Component, ElementRef, AfterViewInit, OnDestroy, ViewChild, ViewChildren, QueryList, HostListener, inject } from '@angular/core';
+import { Component, ElementRef, AfterViewInit, OnDestroy, ViewChildren, QueryList, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import anime from 'animejs';
 import { ThemeService } from '../../core/services/theme.service';
@@ -9,9 +9,6 @@ import { ThemeService } from '../../core/services/theme.service';
   imports: [CommonModule],
   template: `
     <div class="bg-fx" aria-hidden="true">
-      <div class="bg-photo bg-photo-light"></div>
-      <div class="bg-photo bg-photo-dark"></div>
-      <div class="bg-tint"></div>
       <div class="blob b1" #blob></div>
       <div class="blob b2" #blob></div>
       <div class="blob b3" #blob></div>
@@ -26,31 +23,6 @@ import { ThemeService } from '../../core/services/theme.service';
       z-index: -1;
       overflow: hidden;
       pointer-events: none;
-    }
-
-    .bg-photo {
-      position: absolute;
-      inset: -2%;
-      background-size: cover;
-      background-position: center;
-      transition: opacity 0.6s ease;
-      filter: saturate(0.9);
-    }
-    .bg-photo-light {
-      background-image: url('https://images.unsplash.com/photo-1747502064507-ed08d79802db?auto=format&fit=crop&w=1800&q=60');
-      opacity: 0.16;
-    }
-    .bg-photo-dark {
-      background-image: url('https://images.unsplash.com/photo-1754444540401-d3ec14c5efda?auto=format&fit=crop&w=1800&q=60');
-      opacity: 0;
-    }
-    :host-context([data-theme='dark']) .bg-photo-light { opacity: 0; }
-    :host-context([data-theme='dark']) .bg-photo-dark { opacity: 0.24; }
-
-    .bg-tint {
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(180deg, var(--bg) 0%, transparent 30%, transparent 70%, var(--bg) 100%);
     }
 
     .blob {

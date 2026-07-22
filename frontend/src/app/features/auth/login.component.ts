@@ -19,8 +19,9 @@ import { AnimationService } from '../../core/services/animation.service';
         <div class="blob blob-2" #blob></div>
         <div class="blob blob-3" #blob></div>
         <div class="auth-visual-inner">
-          <span class="mark">🎓</span>
-          <h1>Campus Hub</h1>
+          <svg class="visual-logo" viewBox="0 0 24 24"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5"/></svg>
+          <h1>Campiq</h1>
+          <p class="tagline" style="font-weight: 600; font-size: 1.1rem; color: var(--violet); margin-top: -8px; margin-bottom: 12px;">Your Campus, Connected</p>
           <p>Notes, PYQs, events, trip buddies, food finds &amp; anonymous chat — everything your campus needs, in one place.</p>
         </div>
       </div>
@@ -34,8 +35,8 @@ import { AnimationService } from '../../core/services/animation.service';
 
           <form (ngSubmit)="submit()" #f="ngForm">
             <div class="field">
-              <label for="email">College email</label>
-              <input class="input" id="email" name="email" type="email" [(ngModel)]="email" required placeholder="you@college.edu" />
+              <label for="email">College email or ID</label>
+              <input class="input" id="email" name="email" type="text" [(ngModel)]="email" required placeholder="you@college.edu or College ID" />
             </div>
             <div class="field">
               <label for="password">Password</label>
@@ -78,8 +79,18 @@ import { AnimationService } from '../../core/services/animation.service';
     .blob-1 { width: 340px; height: 340px; background: var(--coral); top: -60px; left: -60px; }
     .blob-2 { width: 300px; height: 300px; background: var(--teal); bottom: -80px; right: -40px; }
     .blob-3 { width: 220px; height: 220px; background: var(--amber); bottom: 30%; left: 20%; opacity: 0.35; }
-    .auth-visual-inner { position: relative; z-index: 1; max-width: 420px; padding: 40px; color: #fff; text-align: center; }
-    .mark { font-size: 54px; display: block; margin-bottom: 8px; }
+    .auth-visual-inner { position: relative; z-index: 1; max-width: 420px; padding: 40px; color: #fff; text-align: center; display: flex; flex-direction: column; align-items: center; }
+    .visual-logo {
+      width: 54px;
+      height: 54px;
+      stroke: #fff;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      fill: rgba(255, 255, 255, 0.1);
+      margin-bottom: 12px;
+      filter: drop-shadow(0 0 10px rgba(0, 242, 254, 0.5));
+    }
     .auth-visual-inner h1 { font-family: var(--font-display); font-size: 34px; color: #fff; margin-bottom: 14px; }
     .auth-visual-inner p { color: rgba(255,255,255,0.82); font-size: 15.5px; }
 

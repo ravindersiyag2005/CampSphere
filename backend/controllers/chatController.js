@@ -9,13 +9,20 @@ const { generateAlias } = require('../utils/aliasGenerator');
 const AVATAR_COLORS = ['#6C5CE7', '#00B8A9', '#FF6B5B', '#FFC857', '#2EC4B6', '#F94892', '#4361EE'];
 
 async function getOrCreateAlias(userId, roomId) {
-  const alias = await RoomAlias.findOneAndUpdate(
+  let alias = await RoomAlias.findOne({ userId, roomId });
+  if (alias) return alias;
+
+  const user = await User.findById(userId);
+  const aliasName = generateAlias();
+  const avatarColor = (user && user.avatarColor) ? user.avatarColor : AVATAR_COLORS[Math.floor(Math.random() * AVATAR_COLORS.length)];
+
+  alias = await RoomAlias.findOneAndUpdate(
     { userId, roomId },
     { $setOnInsert: {
         userId,
         roomId,
-        alias: generateAlias(),
-        avatarColor: AVATAR_COLORS[Math.floor(Math.random() * AVATAR_COLORS.length)],
+        alias: aliasName,
+        avatarColor,
     }},
     { upsert: true, new: true, setDefaultsOnInsert: true }
   );
@@ -178,5 +185,63 @@ exports.checkUnreadDMs = async (req, res) => {
     res.json({ hasUnread: unreadCount > 0 });
   } catch (err) {
     res.status(500).json({ message: 'Failed to check unread', error: err.message });
+  }
+};
+
+// @route POST /api/chat/upload
+exports.uploadAttachment = async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
+    const fileUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
+    const type = req.file.mimetype === 'application/pdf' ? 'pdf' : 'image';
+    res.json({
+      fileUrl,
+      fileType: type,
+      fileName: req.file.originalname,
+    });
+  } catch (err) {
+    res.status(500).json({ message: 'Upload failed', error: err.message });
+  }
+};
+
+// @route GET /api/chat/aliases
+exports.listUserAliases = async (req, res) => {
+  try {
+    const aliases = await RoomAlias.find({ userId: req.user._id })
+      .populate('roomId', 'name')
+      .sort({ createdAt: -1 });
+    res.json(aliases);
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to retrieve room aliases', error: err.message });
+  }
+};
+
+// @route PUT /api/chat/rooms/:roomId/alias
+exports.updateRoomAlias = async (req, res) => {
+  try {
+    const { alias } = req.body;
+    const { roomId } = req.params;
+    if (!alias || !alias.trim()) {
+      return res.status(400).json({ message: 'Alias cannot be empty' });
+    }
+
+    // Verify alias uniqueness inside this room:
+    const conflict = await RoomAlias.findOne({
+      roomId,
+      userId: { $ne: req.user._id },
+      alias: { $regex: new RegExp('^' + alias.trim() + '$', 'i') }
+    });
+    if (conflict) {
+      return res.status(409).json({ message: 'This alias is already taken by another student in this room.' });
+    }
+
+    const doc = await RoomAlias.findOneAndUpdate(
+      { userId: req.user._id, roomId },
+      { alias: alias.trim() },
+      { upsert: true, new: true }
+    );
+    res.json(doc);
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to update room alias', error: err.message });
   }
 };

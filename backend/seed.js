@@ -10,20 +10,16 @@ const ChatRoom = require('./models/ChatRoom');
   await connectDB();
 
   const adminEmail = 'admin@campushub.edu';
-  let admin = await User.findOne({ email: adminEmail });
-  if (!admin) {
-    const hashed = await bcrypt.hash('Admin@123', 10);
-    admin = await User.create({
-      name: 'Campus Admin',
-      collegeId: 'ADMIN001',
-      email: adminEmail,
-      password: hashed,
-      role: 'admin',
-    });
-    console.log('Created admin:', adminEmail, '/ password: Admin@123');
-  } else {
-    console.log('Admin already exists:', adminEmail);
-  }
+  await User.deleteMany({ $or: [{ email: adminEmail }, { collegeId: '1232610' }] });
+  const hashed = await bcrypt.hash('1232610', 10);
+  admin = await User.create({
+    name: 'Campus Admin',
+    collegeId: '1232610',
+    email: adminEmail,
+    password: hashed,
+    role: 'admin',
+  });
+  console.log('Created admin collegeId: 1232610 / password: 1232610');
 
   const defaultRooms = [
     { name: 'General Campus Chat', subject: 'General', description: 'Talk about anything campus related' },

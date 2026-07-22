@@ -72,5 +72,15 @@ export const routes: Routes = [
     canActivate: [authGuard, adminGuard],
     loadComponent: () => import('./features/admin/admin-dashboard.component').then((m) => m.AdminDashboardComponent),
   },
+  {
+    path: 'photoholic',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/photoholic/photoholic.component').then((m) => m.PhotoholicComponent),
+  },
+  {
+    path: 'settings',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/settings/settings.component').then((m) => m.SettingsComponent),
+  },
   { path: '**', redirectTo: 'dashboard' },
 ];

@@ -12,7 +12,7 @@ import { StaggerInDirective } from '../../shared/components/stagger-in.directive
     <div class="page">
       <div class="page-header">
         <div>
-          <div class="eyebrow">🕶️ Private Chats</div>
+          <div class="eyebrow">Private Chats</div>
           <h1>Your anonymous DMs</h1>
           <p class="text-muted">
             One-on-one anonymous conversations. You can start a new DM from inside a group room.

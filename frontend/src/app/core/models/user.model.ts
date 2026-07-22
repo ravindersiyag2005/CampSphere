@@ -6,5 +6,6 @@ export interface AppUser {
   role: 'student' | 'admin';
   reputationScore: number;
   contributionPoints: number;
-  avatarColor: string;
+  avatarColor?: string;
+  avatarUrl?: string;
 }

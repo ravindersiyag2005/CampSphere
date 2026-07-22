@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ElementRef, ViewChild, signal, AfterViewChecked, AfterViewInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, ElementRef, ViewChild, signal, AfterViewChecked, AfterViewInit, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -14,6 +14,9 @@ interface ChatMsg {
   createdAt: string;
   mine: boolean;
   avatarColor?: string;
+  attachmentUrl?: string;
+  attachmentType?: 'image' | 'pdf' | 'none';
+  fileName?: string;
 }
 
 @Component({
@@ -41,13 +44,13 @@ interface ChatMsg {
 
       <div class="messages" #scrollBox>
         <div class="empty-state" *ngIf="messages().length === 0">
-          <span class="emoji">👋</span>
+          <svg class="empty-state-icon" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
           <p class="boot-text">$ waiting for first transmission… nobody will know it's you.<span class="term-cursor"></span></p>
         </div>
 
         <div class="msg-row" [class.mine]="m.mine" *ngFor="let m of messages()">
           <div class="avatar avatar-sm" [style.background]="colorFor(m.senderAlias)" *ngIf="!m.mine">
-            {{ m.senderAlias[0] }}
+            {{ m.senderAlias ? m.senderAlias[0] : '?' }}
           </div>
           <div class="bubble">
             <div class="bubble-head" *ngIf="!m.mine">
@@ -56,16 +59,38 @@ interface ChatMsg {
               <button class="link-btn" (click)="messagePrivately(m.senderAlias)">msg --private</button>
               <button class="link-btn danger" (click)="report(m)">report()</button>
             </div>
-            <div class="bubble-text"><span class="prompt-sign mine-prompt" *ngIf="m.mine">&gt;</span>{{ m.text }}</div>
+            <div class="bubble-text" *ngIf="m.text"><span class="prompt-sign mine-prompt" *ngIf="m.mine">&gt;</span>{{ m.text }}</div>
+            <div class="bubble-attachment" *ngIf="m.attachmentUrl">
+              <div *ngIf="m.attachmentType === 'image'" class="attachment-image-wrap">
+                <a [href]="m.attachmentUrl" target="_blank">
+                  <img [src]="m.attachmentUrl" class="attachment-image" alt="Uploaded file" />
+                </a>
+              </div>
+              <div *ngIf="m.attachmentType === 'pdf'" class="attachment-pdf-wrap">
+                <a [href]="m.attachmentUrl" target="_blank" class="pdf-link">
+                  <span class="pdf-icon">📄</span>
+                  <span class="pdf-name">{{ m.fileName || 'document.pdf' }}</span>
+                </a>
+              </div>
+            </div>
             <div class="bubble-time">{{ m.createdAt | date:'shortTime' }}</div>
           </div>
         </div>
       </div>
 
+      <div class="file-preview-bar" *ngIf="selectedFile">
+        <span class="preview-info">📎 {{ selectedFile.name }} ({{ selectedFile.size }} bytes)</span>
+        <button type="button" class="clear-file-btn" (click)="clearFile()">✕</button>
+      </div>
+
       <form class="composer" (ngSubmit)="send()">
         <span class="composer-prompt">{{ myAlias() || 'anon' }}&#64;room:~$</span>
+        <input type="file" #fileInput (change)="onFileSelected($event)" accept="image/*,application/pdf" style="display: none;" />
+        <button class="attach-btn" type="button" (click)="fileInput.click()">📎</button>
         <input class="input composer-input" [(ngModel)]="draft" name="draft" placeholder="type a message…" autocomplete="off" />
-        <button class="btn btn-primary" type="submit" [disabled]="!draft.trim()">Send ↵</button>
+        <button class="btn btn-primary" type="submit" [disabled]="(!draft.trim() && !selectedFile) || uploadingFile">
+          {{ uploadingFile ? 'Uploading…' : 'Send ↵' }}
+        </button>
       </form>
     </div>
   `,
@@ -95,6 +120,18 @@ interface ChatMsg {
 
     .messages { position: relative; z-index: 1; flex: 1; overflow-y: auto; padding: 20px 24px; display: flex; flex-direction: column; gap: 14px; }
     .boot-text { font-family: var(--font-mono); color: var(--violet); }
+    .empty-state-icon {
+      width: 42px;
+      height: 42px;
+      stroke: var(--violet);
+      stroke-width: 1.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      fill: none;
+      margin: 0 auto 12px;
+      display: block;
+      filter: drop-shadow(0 0 8px rgba(0, 242, 254, 0.4));
+    }
 
     .msg-row { display: flex; gap: 10px; max-width: 70%; }
     .msg-row.mine { align-self: flex-end; flex-direction: row-reverse; }
@@ -127,6 +164,25 @@ interface ChatMsg {
     .composer-prompt { font-family: var(--font-mono); color: var(--teal); font-size: 13px; white-space: nowrap; text-shadow: 0 0 6px rgba(57,255,20,0.4); }
     .composer-input { flex: 1; font-family: var(--font-mono); background: rgba(15,17,26,0.8); border-color: rgba(0,242,254,0.2); color: #e2e8f0; }
     .composer-input::placeholder { color: rgba(0,242,254,0.35); }
+    .file-preview-bar {
+      position: relative; z-index: 1;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 6px 24px; background: rgba(0, 242, 254, 0.08);
+      border-top: 1px solid rgba(0,242,254,0.12);
+      font-family: var(--font-mono); font-size: 12px; color: var(--violet);
+    }
+    .clear-file-btn { background: none; border: none; color: var(--coral); cursor: pointer; font-size: 13px; }
+    .attach-btn { background: none; border: none; color: var(--text-muted); font-size: 18px; cursor: pointer; transition: color 0.15s; }
+    .attach-btn:hover { color: var(--violet); }
+    .bubble-attachment { margin-top: 8px; border-radius: var(--radius-sm); overflow: hidden; }
+    .attachment-image { max-width: 100%; max-height: 250px; border-radius: var(--radius-sm); border: 1px solid rgba(255,255,255,0.08); display: block; }
+    .attachment-pdf-wrap { display: inline-block; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: var(--radius-sm); padding: 8px 12px; }
+    .pdf-link { display: flex; align-items: center; gap: 8px; color: var(--violet); text-decoration: none; font-size: 13px; }
+    .pdf-link:hover { text-decoration: underline; }
+
+    @media (max-width: 880px) {
+      .chat-page { height: calc(100dvh - 60px); }
+    }
 
     @media (max-width: 640px) {
       .chat-header { padding: 10px 16px; gap: 8px; }
@@ -158,7 +214,8 @@ export class ChatRoomComponent implements OnInit, OnDestroy, AfterViewChecked, A
     private chatService: ChatService,
     private socketService: SocketService,
     private toast: ToastService,
-    private anim: AnimationService
+    private anim: AnimationService,
+    private ngZone: NgZone
   ) {}
 
   ngOnInit() {
@@ -186,7 +243,16 @@ export class ChatRoomComponent implements OnInit, OnDestroy, AfterViewChecked, A
       if (msg.roomId !== this.roomId) return;
       this.messages.update((list) => [
         ...list,
-        { _id: msg._id, senderAlias: msg.senderAlias, text: msg.text, createdAt: msg.createdAt, mine: msg.senderAlias === this.myAlias() },
+        { 
+          _id: msg._id, 
+          senderAlias: msg.senderAlias, 
+          text: msg.text, 
+          createdAt: msg.createdAt, 
+          mine: msg.senderAlias === this.myAlias(),
+          attachmentUrl: msg.attachmentUrl,
+          attachmentType: msg.attachmentType,
+          fileName: msg.fileName,
+        },
       ]);
       this.shouldScroll = true;
       queueMicrotask(() => {
@@ -201,7 +267,9 @@ export class ChatRoomComponent implements OnInit, OnDestroy, AfterViewChecked, A
   }
 
   ngAfterViewInit() {
-    this.startRain();
+    this.ngZone.runOutsideAngular(() => {
+      this.startRain();
+    });
   }
 
   private startRain() {
@@ -210,6 +278,10 @@ export class ChatRoomComponent implements OnInit, OnDestroy, AfterViewChecked, A
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
+    const isMobile = window.innerWidth <= 880;
+    const spacing = isMobile ? 32 : 16;
+    const fpsInterval = 1000 / (isMobile ? 15 : 30); // 15 FPS on mobile, 30 FPS on desktop
+
     const chars = '01アイウエオカキクケコ$#{}<>/';
     let columns = 0;
     let drops: number[] = [];
@@ -217,27 +289,34 @@ export class ChatRoomComponent implements OnInit, OnDestroy, AfterViewChecked, A
     const resize = () => {
       canvas.width = canvas.clientWidth;
       canvas.height = canvas.clientHeight;
-      columns = Math.floor(canvas.width / 16);
-      drops = new Array(columns).fill(0).map(() => Math.floor(Math.random() * -40));
+      columns = Math.floor(canvas.width / spacing);
+      drops = new Array(columns).fill(0).map(() => Math.floor(Math.random() * -30));
     };
     resize();
     window.addEventListener('resize', resize);
     (this as any)._rainResize = resize;
 
-    const draw = () => {
+    let lastTime = 0;
+
+    const draw = (timestamp: number) => {
+      this.rainFrame = requestAnimationFrame(draw);
+
+      const elapsed = timestamp - lastTime;
+      if (elapsed < fpsInterval) return;
+      lastTime = timestamp - (elapsed % fpsInterval);
+
       ctx.fillStyle = 'rgba(5, 6, 10, 0.18)';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       ctx.font = '14px "JetBrains Mono", monospace';
       for (let i = 0; i < columns; i++) {
         const char = chars[Math.floor(Math.random() * chars.length)];
-        ctx.fillStyle = Math.random() > 0.94 ? '#eafffe' : 'rgba(0, 242, 254, 0.55)';
-        ctx.fillText(char, i * 16, drops[i] * 16);
+        ctx.fillStyle = Math.random() > 0.94 ? '#eafffe' : (isMobile ? 'rgba(243, 85, 136, 0.4)' : 'rgba(0, 242, 254, 0.55)');
+        ctx.fillText(char, i * spacing, drops[i] * 16);
         if (drops[i] * 16 > canvas.height && Math.random() > 0.975) drops[i] = 0;
         drops[i]++;
       }
-      this.rainFrame = requestAnimationFrame(draw);
     };
-    draw();
+    this.rainFrame = requestAnimationFrame(draw);
   }
 
   ngAfterViewChecked() {
@@ -256,11 +335,53 @@ export class ChatRoomComponent implements OnInit, OnDestroy, AfterViewChecked, A
   }
 
   draft = '';
+  selectedFile: File | null = null;
+  uploadingFile = false;
+
+  onFileSelected(event: any) {
+    const file = event.target.files?.[0];
+    if (file) {
+      this.selectedFile = file;
+    }
+  }
+
+  clearFile() {
+    this.selectedFile = null;
+  }
 
   send() {
-    if (!this.draft.trim()) return;
-    this.socketService.instance.emit('sendMessage', { roomId: this.roomId, text: this.draft.trim() });
-    this.draft = '';
+    if (!this.draft.trim() && !this.selectedFile) return;
+
+    if (this.selectedFile) {
+      this.uploadingFile = true;
+      const fd = new FormData();
+      fd.append('file', this.selectedFile);
+
+      this.chatService.uploadAttachment(fd).subscribe({
+        next: (res) => {
+          this.socketService.instance.emit('sendMessage', {
+            roomId: this.roomId,
+            text: this.draft.trim(),
+            attachmentUrl: res.fileUrl,
+            attachmentType: res.fileType,
+            fileName: res.fileName,
+          });
+          this.selectedFile = null;
+          this.draft = '';
+          this.uploadingFile = false;
+        },
+        error: (err) => {
+          this.toast.error('Failed to upload attachment.');
+          this.uploadingFile = false;
+        }
+      });
+    } else {
+      this.socketService.instance.emit('sendMessage', { 
+        roomId: this.roomId, 
+        text: this.draft.trim() 
+      });
+      this.draft = '';
+    }
   }
 
   messagePrivately(alias: string) {
@@ -276,6 +397,7 @@ export class ChatRoomComponent implements OnInit, OnDestroy, AfterViewChecked, A
   }
 
   colorFor(alias: string): string {
+    if (!alias) return '#6C5CE7';
     if (!this.colorMap.has(alias)) {
       this.colorMap.set(alias, this.palette[this.colorMap.size % this.palette.length]);
     }

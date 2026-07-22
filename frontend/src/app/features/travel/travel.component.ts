@@ -15,7 +15,7 @@ import { StaggerInDirective } from '../../shared/components/stagger-in.directive
     <div class="page page--travel">
       <div class="page-header">
         <div>
-          <div class="eyebrow">🧳 Travel &amp; Trip Buddy</div>
+          <div class="eyebrow">Travel &amp; Trip Buddy</div>
           <h1>Going somewhere? Find a companion or split a ride</h1>
           <p class="text-muted">Posts auto-expire 12 hours after the travel time — no clutter from old trips.</p>
         </div>
@@ -55,7 +55,7 @@ import { StaggerInDirective } from '../../shared/components/stagger-in.directive
           </div>
           <div class="field">
             <label>Date &amp; time</label>
-            <input class="input" type="datetime-local" name="travelDateTime" [(ngModel)]="form.travelDateTime" required />
+            <input class="input" type="datetime-local" [min]="minDateTime" name="travelDateTime" [(ngModel)]="form.travelDateTime" required />
           </div>
           <div class="field" *ngIf="form.type === 'sharing-ride'">
             <label>Seats / max people</label>
@@ -102,16 +102,51 @@ import { StaggerInDirective } from '../../shared/components/stagger-in.directive
           </div>
 
           <div class="flex justify-between items-center mt-16">
-            <button class="btn btn-sm" [class]="joined(t) ? 'btn-teal' : 'btn-primary'" (click)="join(t, $event)" [disabled]="t.status === 'full' && !joined(t)">
-              {{ joined(t) ? '✓ Joined' : (t.status === 'full' ? 'Full' : 'Join / Interested') }}
+            <button *ngIf="!isCreator(t)" class="btn btn-sm" [class]="joined(t) ? 'btn-teal' : (requested(t) ? 'btn-outline' : (declined(t) ? 'btn-danger' : 'btn-primary'))" (click)="join(t, $event)" [disabled]="t.status === 'full' && !joined(t) && !requested(t)">
+              {{ joined(t) ? '✓ Joined' : (requested(t) ? 'Request Sent' : (declined(t) ? 'Declined - Re-request' : (t.status === 'full' ? 'Full' : 'Join / Interested'))) }}
             </button>
-            <button class="btn btn-danger btn-sm" *ngIf="canDelete(t)" (click)="remove(t)">Remove</button>
+            
+            <button *ngIf="isCreator(t) && (t.requestedUsers?.length > 0 || t.peopleJoined?.length > 0)" class="btn btn-outline btn-sm" (click)="toggleMgmt(t._id)">
+              {{ expandedRequests[t._id] ? 'Hide Management' : 'Manage Trip (' + t.requestedUsers.length + ' Pending)' }}
+            </button>
+            
+            <button class="btn btn-danger btn-sm ml-auto" *ngIf="canDelete(t)" (click)="remove(t)">Remove Post</button>
+          </div>
+
+          <!-- Creator Management Section -->
+          <div class="creator-mgmt mt-24" *ngIf="isCreator(t) && expandedRequests[t._id]">
+            <div class="mgmt-divider"></div>
+            
+            <div *ngIf="t.requestedUsers?.length > 0" class="mb-16">
+              <h4 class="section-title">Pending Requests</h4>
+              <div class="request-item flex items-center justify-between gap-12" *ngFor="let reqUser of t.requestedUsers">
+                <div class="flex items-center gap-8">
+                  <div class="avatar avatar-sm" [style.background]="reqUser.avatarColor || '#6C5CE7'">{{ initials(reqUser.name) }}</div>
+                  <span class="text-sm font-medium">{{ reqUser.name }}</span>
+                </div>
+                <div class="flex gap-8">
+                  <button class="btn btn-sm btn-primary" (click)="acceptReq(t, reqUser._id)">Accept</button>
+                  <button class="btn btn-sm btn-outline" (click)="declineReq(t, reqUser._id)">Decline</button>
+                </div>
+              </div>
+            </div>
+
+            <div *ngIf="t.peopleJoined?.length > 0">
+              <h4 class="section-title">Accepted Travelers</h4>
+              <div class="request-item flex justify-between items-center" *ngFor="let accUser of t.peopleJoined">
+                <div class="flex items-center gap-8">
+                  <div class="avatar avatar-sm" [style.background]="accUser.avatarColor || '#00B8A9'">{{ initials(accUser.name) }}</div>
+                  <span class="text-sm font-medium">{{ accUser.name }}</span>
+                </div>
+                <button class="btn btn-sm btn-danger btn-outline" (click)="removePart(t, accUser._id)">Remove</button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
       <div class="empty-state" *ngIf="!loading() && posts().length === 0">
-        <span class="emoji">🧭</span>
+        <svg class="empty-state-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
         <p>No trips posted yet. Going somewhere? Post it!</p>
       </div>
 
@@ -128,6 +163,21 @@ import { StaggerInDirective } from '../../shared/components/stagger-in.directive
     .filter-input { flex: 2; min-width: 220px; }
     .filter-select { flex: 1; min-width: 180px; }
     .meta-row { font-size: 13.5px; color: var(--text-muted); margin-top: 4px; }
+    
+    .mgmt-divider { height: 1px; background: rgba(255,255,255,0.05); margin: 20px 0; }
+    .section-title { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 12px; }
+    
+    .request-item { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: var(--radius-sm); padding: 12px; margin-bottom: 8px; transition: border-color 0.2s; }
+    .request-item:hover { border-color: rgba(255,255,255,0.1); }
+    .avatar-xs { width: 24px; height: 24px; font-size: 10px; }
+    .btn-xs { padding: 2px 8px; font-size: 11px; }
+    
+    @media (max-width: 768px) {
+      .form-grid { grid-template-columns: 1fr; gap: 12px; }
+      .page-header .btn { width: 100%; margin-top: 12px; }
+      .filters { flex-direction: column; }
+      .filter-input, .filter-select { width: 100%; min-width: auto; }
+    }
   `],
 })
 export class TravelComponent implements OnInit {
@@ -138,9 +188,24 @@ export class TravelComponent implements OnInit {
   toLocation = '';
   type = '';
 
+  expandedRequests: Record<string, boolean> = {};
+
+  get minDateTime(): string {
+    const d = new Date();
+    d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+    return d.toISOString().slice(0, 16);
+  }
+
+  get defaultDateTime(): string {
+    const d = new Date();
+    d.setDate(d.getDate() + 1);
+    d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+    return d.toISOString().slice(0, 16);
+  }
+
   form = {
     type: 'need-companion', travelMode: 'train', fromLocation: '', toLocation: '',
-    travelDateTime: '', maxPeople: 1, costSharing: '', notes: '',
+    travelDateTime: this.defaultDateTime, maxPeople: 1, costSharing: '', notes: '',
   };
 
   constructor(private travelService: TravelService, public auth: AuthService, private toast: ToastService, private anim: AnimationService) {}
@@ -162,7 +227,7 @@ export class TravelComponent implements OnInit {
         this.saving.set(false);
         this.showForm.set(false);
         this.toast.success('Trip posted!');
-        this.form = { type: 'need-companion', travelMode: 'train', fromLocation: '', toLocation: '', travelDateTime: '', maxPeople: 1, costSharing: '', notes: '' };
+        this.form = { type: 'need-companion', travelMode: 'train', fromLocation: '', toLocation: '', travelDateTime: this.defaultDateTime, maxPeople: 1, costSharing: '', notes: '' };
         this.load();
       },
       error: () => this.saving.set(false),
@@ -173,13 +238,59 @@ export class TravelComponent implements OnInit {
     this.anim.pulse(event.currentTarget as Element);
     this.travelService.join(t._id).subscribe((updated) => {
       t.peopleJoined = updated.peopleJoined;
-      t.status = updated.peopleJoined.length >= t.maxPeople ? 'full' : 'open';
+      t.requestedUsers = updated.requestedUsers;
+      t.status = updated.status;
     });
+  }
+
+  toggleMgmt(tId: string) {
+    this.expandedRequests[tId] = !this.expandedRequests[tId];
+  }
+
+  isCreator(t: any): boolean {
+    const id = this.auth.currentUser()?.id;
+    return !!id && (t.postedBy?._id || t.postedBy) === id;
+  }
+
+  requested(t: any) {
+    if (!this.auth.currentUser()) return false;
+    const myId = this.auth.currentUser()!.id;
+    return t.requestedUsers?.some((u: any) => (u._id || u) === myId);
+  }
+
+  declined(t: any) {
+    if (!this.auth.currentUser()) return false;
+    const myId = this.auth.currentUser()!.id;
+    return t.declinedUsers?.some((u: any) => (u._id || u) === myId);
   }
 
   joined(t: any): boolean {
     const id = this.auth.currentUser()?.id;
     return t.peopleJoined?.some((p: any) => (p._id || p) === id);
+  }
+
+  acceptReq(t: any, userId: string) {
+    this.travelService.acceptRequest(t._id, userId).subscribe((updated) => {
+      t.requestedUsers = updated.requestedUsers;
+      t.peopleJoined = updated.peopleJoined;
+      t.status = updated.status;
+      this.toast.success('Request accepted');
+    });
+  }
+
+  declineReq(t: any, userId: string) {
+    this.travelService.declineRequest(t._id, userId).subscribe((updated) => {
+      t.requestedUsers = updated.requestedUsers;
+      this.toast.success('Request declined');
+    });
+  }
+
+  removePart(t: any, userId: string) {
+    this.travelService.removeParticipant(t._id, userId).subscribe((updated) => {
+      t.peopleJoined = updated.peopleJoined;
+      t.status = updated.status;
+      this.toast.success('Participant removed');
+    });
   }
 
   canDelete(t: any): boolean {

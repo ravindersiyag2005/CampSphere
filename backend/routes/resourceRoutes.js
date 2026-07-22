@@ -8,5 +8,7 @@ router.get('/', protect, ctrl.list);
 router.post('/', protect, upload.single('file'), ctrl.create);
 router.post('/:id/upvote', protect, ctrl.upvote);
 router.get('/:id/download', protect, ctrl.download);
+router.put('/:id', protect, ctrl.update);
+router.delete('/:id', protect, ctrl.remove);
 
 module.exports = router;

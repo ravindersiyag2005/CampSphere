@@ -20,15 +20,15 @@ export class AuthService {
   constructor(private http: HttpClient, private router: Router, private injector: Injector) {}
 
   private readStoredUser(): AppUser | null {
-    const raw = localStorage.getItem(USER_KEY);
+    const raw = sessionStorage.getItem(USER_KEY);
     return raw ? JSON.parse(raw) : null;
   }
 
   get token(): string | null {
-    return localStorage.getItem(TOKEN_KEY);
+    return sessionStorage.getItem(TOKEN_KEY);
   }
 
-  register(payload: { name: string; collegeId: string; email: string; password: string }): Observable<any> {
+  register(payload: { name: string; collegeId: string; email?: string; password: string }): Observable<any> {
     return this.http.post<any>(`${environment.apiUrl}/auth/register`, payload).pipe(
       tap((res) => this.persistSession(res.token, res.user))
     );
@@ -41,22 +41,30 @@ export class AuthService {
   }
 
   private persistSession(token: string, user: AppUser) {
-    localStorage.setItem(TOKEN_KEY, token);
-    localStorage.setItem(USER_KEY, JSON.stringify(user));
+    sessionStorage.setItem(TOKEN_KEY, token);
+    sessionStorage.setItem(USER_KEY, JSON.stringify(user));
+    this.currentUserSig.set(user);
+  }
+
+  updateLocalUser(user: AppUser) {
+    sessionStorage.setItem(USER_KEY, JSON.stringify(user));
     this.currentUserSig.set(user);
   }
 
   logout() {
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(USER_KEY);
+    sessionStorage.removeItem(TOKEN_KEY);
+    sessionStorage.removeItem(USER_KEY);
     this.currentUserSig.set(null);
     
-    // Lazily get SocketService to avoid circular dependency, and disconnect
     import('./socket.service').then(m => {
       const socketService = this.injector.get(m.SocketService);
       socketService.disconnect();
     });
     
     this.router.navigate(['/login']);
+  }
+
+  searchUsers(query: string): Observable<any[]> {
+    return this.http.get<any[]>(`${environment.apiUrl}/auth/search?q=${encodeURIComponent(query)}`);
   }
 }

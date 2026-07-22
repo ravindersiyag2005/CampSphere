@@ -15,7 +15,7 @@ type Tab = 'overview' | 'users' | 'chat' | 'reports' | 'blocklist';
     <div class="page">
       <div class="page-header">
         <div>
-          <div class="eyebrow">🛡️ Admin Panel</div>
+          <div class="eyebrow">Admin Panel</div>
           <h1>Moderation &amp; oversight</h1>
           <p class="text-muted">Real identities are visible to you everywhere, including inside anonymous chat.</p>
         </div>
@@ -40,25 +40,27 @@ type Tab = 'overview' | 'users' | 'chat' | 'reports' | 'blocklist';
 
       <!-- USERS -->
       <div class="mt-24" *ngIf="tab() === 'users'">
-        <table class="admin-table" *ngIf="users().length; else emptyUsers">
-          <thead>
-            <tr><th>Name</th><th>College ID</th><th>Email</th><th>Reputation</th><th>Status</th><th></th></tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let u of users()">
-              <td>{{ u.name }}</td>
-              <td class="mono">{{ u.collegeId }}</td>
-              <td>{{ u.email }}</td>
-              <td>{{ u.reputationScore }}</td>
-              <td><span class="badge" [class]="u.isBlocked ? 'badge-coral' : 'badge-teal'">{{ u.isBlocked ? 'Blocked' : 'Active' }}</span></td>
-              <td>
-                <button class="btn btn-sm" [class]="u.isBlocked ? 'btn-teal' : 'btn-danger'" (click)="toggleBlock(u)">
-                  {{ u.isBlocked ? 'Unblock' : 'Block' }}
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+        <div class="table-container" *ngIf="users().length; else emptyUsers">
+          <table class="admin-table">
+            <thead>
+              <tr><th>Name</th><th>College ID</th><th>Email</th><th>Reputation</th><th>Status</th><th></th></tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let u of users()">
+                <td>{{ u.name }}</td>
+                <td class="mono">{{ u.collegeId }}</td>
+                <td>{{ u.email }}</td>
+                <td>{{ u.reputationScore }}</td>
+                <td><span class="badge" [class]="u.isBlocked ? 'badge-coral' : 'badge-teal'">{{ u.isBlocked ? 'Blocked' : 'Active' }}</span></td>
+                <td>
+                  <button class="btn btn-sm" [class]="u.isBlocked ? 'btn-teal' : 'btn-danger'" (click)="toggleBlock(u)">
+                    {{ u.isBlocked ? 'Unblock' : 'Block' }}
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
         <ng-template #emptyUsers><p class="text-muted">No students registered yet.</p></ng-template>
       </div>
 
@@ -66,9 +68,12 @@ type Tab = 'overview' | 'users' | 'chat' | 'reports' | 'blocklist';
       <div class="mt-24 monitor-grid" *ngIf="tab() === 'chat'">
         <div class="card monitor-side">
           <h4>Rooms</h4>
-          <button class="monitor-item" *ngFor="let r of rooms()" [class.active]="selectedRoom() === r._id" (click)="loadRoomMonitor(r)">
-            💬 {{ r.name }}
-          </button>
+          <div class="monitor-item-row" *ngFor="let r of rooms()" [class.active]="selectedRoom() === r._id">
+            <button class="monitor-item-btn" (click)="loadRoomMonitor(r)">
+              💬 {{ r.name }}
+            </button>
+            <button class="delete-room-btn" (click)="deleteRoom(r, $event)" title="Delete room">✕</button>
+          </div>
           <h4 class="mt-16">Anonymous DMs</h4>
           <button class="monitor-item" *ngFor="let c of conversations()" [class.active]="selectedConvo() === c._id" (click)="loadConvoMonitor(c)">
             🕶️ {{ c.participants[0]?.name }} ↔ {{ c.participants[1]?.name }}
@@ -77,7 +82,7 @@ type Tab = 'overview' | 'users' | 'chat' | 'reports' | 'blocklist';
 
         <div class="card monitor-main">
           <div *ngIf="!selectedRoom() && !selectedConvo()" class="empty-state">
-            <span class="emoji">🔍</span>
+            <svg class="empty-state-icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
             <p>Select a room or DM to monitor. Real names are shown even though students see aliases.</p>
           </div>
           <div class="monitor-msg" *ngFor="let m of monitorMessages()">
@@ -98,22 +103,24 @@ type Tab = 'overview' | 'users' | 'chat' | 'reports' | 'blocklist';
 
       <!-- REPORTS -->
       <div class="mt-24" *ngIf="tab() === 'reports'">
-        <table class="admin-table" *ngIf="reports().length; else emptyReports">
-          <thead><tr><th>Reported user</th><th>Message</th><th>Reported by</th><th>Reason</th><th>Status</th><th></th></tr></thead>
-          <tbody>
-            <tr *ngFor="let r of reports()">
-              <td>{{ r.reportedUser?.name }} <span class="text-faint text-sm mono">({{ r.reportedUser?.collegeId }})</span></td>
-              <td class="msg-cell">{{ r.messageId?.text }}</td>
-              <td>{{ r.reportedBy?.name }}</td>
-              <td>{{ r.reason }}</td>
-              <td><span class="badge" [class]="r.status === 'open' ? 'badge-coral' : 'badge-teal'">{{ r.status }}</span></td>
-              <td>
-                <button class="btn btn-sm btn-teal" *ngIf="r.status !== 'reviewed'" (click)="updateReport(r, 'reviewed')">Mark reviewed</button>
-                <button class="btn btn-sm btn-ghost" *ngIf="r.status !== 'dismissed'" (click)="updateReport(r, 'dismissed')">Dismiss</button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+        <div class="table-container" *ngIf="reports().length; else emptyReports">
+          <table class="admin-table">
+            <thead><tr><th>Reported user</th><th>Message</th><th>Reported by</th><th>Reason</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+              <tr *ngFor="let r of reports()">
+                <td>{{ r.reportedUser?.name }} <span class="text-faint text-sm mono">({{ r.reportedUser?.collegeId }})</span></td>
+                <td class="msg-cell">{{ r.messageId?.text }}</td>
+                <td>{{ r.reportedBy?.name }}</td>
+                <td>{{ r.reason }}</td>
+                <td><span class="badge" [class]="r.status === 'open' ? 'badge-coral' : 'badge-teal'">{{ r.status }}</span></td>
+                <td>
+                  <button class="btn btn-sm btn-teal" *ngIf="r.status !== 'reviewed'" (click)="updateReport(r, 'reviewed')">Mark reviewed</button>
+                  <button class="btn btn-sm btn-ghost" *ngIf="r.status !== 'dismissed'" (click)="updateReport(r, 'dismissed')">Dismiss</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
         <ng-template #emptyReports><p class="text-muted">No reports filed. All clear!</p></ng-template>
       </div>
 
@@ -146,7 +153,8 @@ type Tab = 'overview' | 'users' | 'chat' | 'reports' | 'blocklist';
 
     .stat-num { font-family: var(--font-display); font-size: 30px; font-weight: 800; color: var(--ink); }
 
-    .admin-table { width: 100%; border-collapse: collapse; background: var(--surface); border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--shadow-sm); }
+    .table-container { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: var(--radius-md); box-shadow: var(--shadow-sm); }
+    .admin-table { width: 100%; border-collapse: collapse; background: var(--surface); border-radius: var(--radius-md); overflow: hidden; }
     .admin-table th, .admin-table td { text-align: left; padding: 12px 16px; border-bottom: 1px solid var(--border); font-size: 13.5px; }
     .admin-table th { background: var(--surface-alt); font-family: var(--font-mono); text-transform: uppercase; font-size: 11px; letter-spacing: 0.05em; color: var(--text-muted); }
     .mono { font-family: var(--font-mono); }
@@ -154,12 +162,24 @@ type Tab = 'overview' | 'users' | 'chat' | 'reports' | 'blocklist';
 
     .monitor-grid { display: grid; grid-template-columns: 280px 1fr; gap: 20px; }
     .monitor-side h4 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin: 0 0 8px; }
-    .monitor-item {
-      display: block; width: 100%; text-align: left; background: none; border: none; padding: 9px 10px;
-      border-radius: var(--radius-sm); font-size: 13.5px; cursor: pointer; color: var(--text);
+    .monitor-item-row {
+      display: flex; align-items: center; justify-content: space-between;
+      border-radius: var(--radius-sm); margin-bottom: 2px;
     }
-    .monitor-item:hover { background: var(--surface-alt); }
-    .monitor-item.active { background: var(--violet-light); color: var(--violet-deep); font-weight: 600; }
+    .monitor-item-row:hover { background: var(--surface-alt); }
+    .monitor-item-row.active { background: var(--violet-light); color: var(--violet-deep); font-weight: 600; }
+    .monitor-item-btn {
+      flex: 1; text-align: left; background: none; border: none; padding: 9px 10px;
+      font-size: 13.5px; cursor: pointer; color: inherit; font-weight: inherit;
+    }
+    .delete-room-btn {
+      background: none; border: none; padding: 9px 12px; cursor: pointer;
+      color: var(--text-muted); font-size: 13.5px; border-radius: var(--radius-sm);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .delete-room-btn:hover {
+      color: var(--coral-deep); background: #fff0ee;
+    }
     .monitor-main { min-height: 400px; }
     .monitor-msg { padding: 12px 0; border-bottom: 1px dashed var(--border); }
     .monitor-msg-head { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; flex-wrap: wrap; }
@@ -211,6 +231,20 @@ export class AdminDashboardComponent implements OnInit {
       u.isBlocked = updated.isBlocked;
       this.toast.success(u.isBlocked ? `${u.name} has been blocked` : `${u.name} has been unblocked`);
     });
+  }
+
+  deleteRoom(r: any, event: Event) {
+    event.stopPropagation();
+    if (confirm(`Are you sure you want to delete the room "${r.name}" and all of its messages? This action cannot be undone.`)) {
+      this.admin.removeRoom(r._id).subscribe(() => {
+        this.rooms.update((list) => list.filter((x) => x._id !== r._id));
+        this.toast.success(`Room "${r.name}" has been deleted.`);
+        if (this.selectedRoom() === r._id) {
+          this.selectedRoom.set(null);
+          this.monitorMessages.set([]);
+        }
+      });
+    }
   }
 
   loadRoomMonitor(r: any) {

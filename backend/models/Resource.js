@@ -15,6 +15,8 @@ const resourceSchema = new mongoose.Schema(
     downloadCount: { type: Number, default: 0 },
     upvotes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     tags: [{ type: String }],
+    isPrivate: { type: Boolean, default: false },
+    sharedWith: [{ type: String }],
   },
   { timestamps: true }
 );

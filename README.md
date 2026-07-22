@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🎓 CampusHub
+# 🎓 Campiq
 
 ### *The all-in-one digital campus platform — built on the MEAN stack*
 
@@ -18,7 +18,7 @@
 
 <br/>
 
-> **CampusHub** brings your entire campus life into one sleek platform — share notes, find trip buddies, discover food spots, chat anonymously, and let admins keep everything in order. Dark mode included. Animations too. Zero boring UIs.
+> **Campiq** brings your entire campus life into one sleek platform — share notes, find trip buddies, discover food spots, chat anonymously, and let admins keep everything in order. Dark mode included. Animations too. Zero boring UIs.
 
 <br/>
 
@@ -30,15 +30,26 @@
 
 | Module | What it does |
 |--------|-------------|
-| 📚 **Notes Sharing** | Upload, search, upvote & download subject-wise notes and resources |
+| 📚 **Notes Sharing** | Upload, search, upvote, edit, delete & download notes. **Instantly earn contribution points**! |
 | 📝 **PYQ Bank** | Previous-year question papers, same slick engine as Notes |
 | 🎉 **Campus Events** | Post & discover events — auto-expire via MongoDB TTL after the event ends |
-| ✈️ **Travel & Trip Buddy** | Find trip-mates, auto-cleans up 12h after departure |
+| ✈️ **Travel & Trip Buddy** | Find trip-mates, **manage join requests (accept/decline)**, and auto-cleans up 12h after departure |
 | 🍜 **Food Spots** | Pin dishes on campus or in the city — upvote + 5-star ratings |
-| 💬 **Anonymous Chat** | Group rooms + private 1:1 DMs with alias-based identity |
-| 🛡️ **Admin Panel** | User management, chat monitor (real identities), report queue, blocked-word list |
+| 💬 **Anonymous Chat** | Group rooms + private 1:1 DMs with alias-based identity and private photo/PDF sharing |
+| 🛡️ **Admin Panel** | User management, chat monitor, report queue, blocked-word list, and **global moderation of private posts**. |
+| 📸 **Photoholic Feed** | Share photos of campus life, double-tap to like, and comment. **Share private moments with specific college IDs.** |
+| ⚙️ **Profile & Settings** | Custom avatars, password management, and per-room anonymous identity control |
+| 📱 **Fully Responsive** | Optimized layouts that seamlessly adapt across mobile, tablet, and desktop views |
 | 🌙 **Dark Mode** | System-preference aware, one-click toggle, persisted forever |
 | ✨ **Anime.js Animations** | Staggered entrances, counting numbers, parallax blobs, elastic micro-interactions |
+
+---
+
+## 🛡️ Security & Authorization
+
+- **Rate Limiting**: Integrated `express-rate-limit` to prevent brute-force attacks on authentication endpoints and limit global API spam.
+- **Robust Access Control**: Full database-level IDOR (Insecure Direct Object Reference) protection. Users can securely edit or delete only their own uploaded resources (Notes, PYQs, Travel Posts, etc.), while Admins have full moderation capabilities.
+- **NoSQL Injection Protection**: Inputs are strictly sanitized and regex queries safely escaped to prevent database injection and timing-based user enumeration attacks.
 
 ---
 
@@ -70,7 +81,7 @@ campus-hub/
 │   ├── config/          → MongoDB connection
 │   ├── models/          → User, Resource, Event, TravelPost, FoodSpot,
 │   │                       ChatRoom, RoomAlias, Conversation, Message,
-│   │                       BlockedWord, Report, Review
+│   │                       BlockedWord, Report, Review, Post
 │   ├── controllers/     → One per module (auth, chat, admin, …)
 │   ├── routes/          → Express routers
 │   ├── middleware/       → JWT auth • Multer file upload
@@ -90,6 +101,8 @@ campus-hub/
         │   ├── travel/      → Trip buddy board
         │   ├── food/        → Food spots map
         │   ├── chat/        → Rooms list, Group room, Anonymous DM
+        │   ├── photoholic/  → Campus photo feed, likes, and comments
+        │   ├── settings/    → Avatar upload, profile & aliases management
         │   └── admin/       → Admin dashboard (5 tabs)
         └── shared/      → BackgroundFX component, StaggerIn directive
 ```
@@ -128,7 +141,7 @@ npm run dev                # Starts on http://localhost:5000 via nodemon
 node seed.js
 ```
 
-> 🔑 **Default admin credentials:** `admin@campushub.edu` / `Admin@123`
+> 🔑 **Default admin credentials:** College ID `1232610` / password `1232610`
 
 ### 3️⃣ Frontend setup
 
@@ -144,7 +157,7 @@ npm start                  # Starts on http://localhost:4200
 
 ## 🔐 Anonymous Chat — How It Works
 
-The alias system is one of CampusHub's coolest features:
+The alias system is one of Campiq's coolest features:
 
 ```
 Student A ──► "Cosmic Falcon 482"  (in Room 1)
@@ -157,6 +170,7 @@ Student A ──► "Lunar Wolf 117"     (in Room 2)   ← different alias, same
 |---------|---------|
 | **Per-room aliases** | Each user gets a unique alias per room — can't be correlated across rooms |
 | **Private DMs** | "Message privately" resolves alias → real user *server-side*, still anonymous on client |
+| **Media Sharing** | Securely share photos and PDFs in private 1:1 DMs and group rooms |
 | **Admin transparency** | Admins see real name + college ID next to every message and DM |
 | **Word filter** | Messages checked against admin blocklist *before* saving — can't be bypassed from browser |
 | **Rate limiting** | Max 8 messages per 10 seconds per user — server-side, in-memory |

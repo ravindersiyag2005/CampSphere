@@ -65,23 +65,28 @@ function initChatSocket(io) {
       }
     });
 
-    socket.on('sendMessage', async ({ roomId, text }) => {
+    socket.on('sendMessage', async ({ roomId, text, attachmentUrl, attachmentType, fileName }) => {
       try {
-        if (!text || !text.trim()) return;
+        if ((!text || !text.trim()) && !attachmentUrl) return;
         if (isRateLimited(socket.user._id.toString())) {
           return socket.emit('errorMessage', { message: 'You are sending messages too fast. Slow down.' });
         }
-        const blockedWords = (await BlockedWord.find()).map((w) => w.word);
-        const check = containsBlockedWord(text, blockedWords);
-        if (check.blocked) {
-          return socket.emit('errorMessage', { message: 'Your message contains a blocked word and was not sent.' });
+        if (text && text.trim()) {
+          const blockedWords = (await BlockedWord.find()).map((w) => w.word);
+          const check = containsBlockedWord(text, blockedWords);
+          if (check.blocked) {
+            return socket.emit('errorMessage', { message: 'Your message contains a blocked word and was not sent.' });
+          }
         }
         const alias = await getOrCreateAlias(socket.user._id, roomId);
         const message = await Message.create({
           roomId,
           senderId: socket.user._id,
           senderAlias: alias.alias,
-          text: text.trim(),
+          text: (text || '').trim(),
+          attachmentUrl,
+          attachmentType,
+          fileName,
         });
         io.to(`room:${roomId}`).emit('newMessage', {
           _id: message._id,
@@ -90,6 +95,9 @@ function initChatSocket(io) {
           avatarColor: alias.avatarColor,
           text: message.text,
           createdAt: message.createdAt,
+          attachmentUrl: message.attachmentUrl,
+          attachmentType: message.attachmentType,
+          fileName: message.fileName,
         });
         // also broadcast full detail (with real identity) to admins watching the monitor
         io.to('admins').emit('adminNewMessage', {
@@ -111,16 +119,18 @@ function initChatSocket(io) {
       socket.join(`convo:${conversationId}`);
     });
 
-    socket.on('sendDM', async ({ conversationId, text, clientId }) => {
+    socket.on('sendDM', async ({ conversationId, text, clientId, attachmentUrl, attachmentType, fileName }) => {
       try {
-        if (!text || !text.trim()) return;
+        if ((!text || !text.trim()) && !attachmentUrl) return;
         if (isRateLimited(socket.user._id.toString())) {
           return socket.emit('errorMessage', { message: 'You are sending messages too fast. Slow down.' });
         }
-        const blockedWords = (await BlockedWord.find()).map((w) => w.word);
-        const check = containsBlockedWord(text, blockedWords);
-        if (check.blocked) {
-          return socket.emit('errorMessage', { message: 'Your message contains a blocked word and was not sent.' });
+        if (text && text.trim()) {
+          const blockedWords = (await BlockedWord.find()).map((w) => w.word);
+          const check = containsBlockedWord(text, blockedWords);
+          if (check.blocked) {
+            return socket.emit('errorMessage', { message: 'Your message contains a blocked word and was not sent.' });
+          }
         }
         const convo = await Conversation.findById(conversationId);
         if (!convo || !convo.participants.some((p) => p.toString() === socket.user._id.toString())) {
@@ -131,7 +141,10 @@ function initChatSocket(io) {
           conversationId,
           senderId: socket.user._id,
           senderAlias: mine ? mine.alias : 'Anonymous',
-          text: text.trim(),
+          text: (text || '').trim(),
+          attachmentUrl,
+          attachmentType,
+          fileName,
         });
         const otherParticipant = convo.participants.find((p) => p.toString() !== socket.user._id.toString());
         if (otherParticipant && !convo.unreadBy.includes(otherParticipant)) {
@@ -139,7 +152,7 @@ function initChatSocket(io) {
         }
         convo.lastMessageAt = new Date();
         await convo.save();
-
+ 
         io.to(`convo:${conversationId}`).emit('newDM', {
           _id: message._id,
           conversationId,
@@ -147,6 +160,9 @@ function initChatSocket(io) {
           text: message.text,
           createdAt: message.createdAt,
           clientId,
+          attachmentUrl: message.attachmentUrl,
+          attachmentType: message.attachmentType,
+          fileName: message.fileName,
         });
         if (otherParticipant) {
           io.to(`user:${otherParticipant}`).emit('dmNotification', { conversationId });

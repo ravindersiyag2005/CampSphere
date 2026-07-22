@@ -37,4 +37,13 @@ export class ChatService {
   reportMessage(id: string, reason: string) {
     return this.http.post<any>(`${this.base}/messages/${id}/report`, { reason });
   }
+  uploadAttachment(formData: FormData) {
+    return this.http.post<any>(`${this.base}/upload`, formData);
+  }
+  listMyAliases() {
+    return this.http.get<any[]>(`${this.base}/aliases`);
+  }
+  updateRoomAlias(roomId: string, alias: string) {
+    return this.http.put<any>(`${this.base}/rooms/${roomId}/alias`, { alias });
+  }
 }

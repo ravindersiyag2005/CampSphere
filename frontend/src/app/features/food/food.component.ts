@@ -15,7 +15,7 @@ import { StaggerInDirective } from '../../shared/components/stagger-in.directive
     <div class="page page--food">
       <div class="page-header">
         <div>
-          <div class="eyebrow">🍜 Food Spots</div>
+          <div class="eyebrow">Food Spots</div>
           <h1>Best bites, on campus and around the city</h1>
           <p class="text-muted">Pin your favourite dish, rate what others recommend.</p>
         </div>
@@ -98,7 +98,7 @@ import { StaggerInDirective } from '../../shared/components/stagger-in.directive
       </div>
 
       <div class="empty-state" *ngIf="!loading() && spots().length === 0">
-        <span class="emoji">🍽️</span>
+        <svg class="empty-state-icon" viewBox="0 0 24 24"><path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z"/><circle cx="12" cy="10" r="3"/></svg>
         <p>No food spots yet — pin your favourite!</p>
       </div>
 
@@ -118,6 +118,12 @@ import { StaggerInDirective } from '../../shared/components/stagger-in.directive
     .rating-row { display: flex; align-items: center; gap: 8px; }
     .rate-widget { display: flex; }
     .star-btn { background: none; border: none; color: var(--amber); font-size: 18px; cursor: pointer; padding: 2px; }
+    @media (max-width: 768px) {
+      .form-grid { grid-template-columns: 1fr; gap: 12px; }
+      .page-header .btn { width: 100%; margin-top: 12px; }
+      .filters { flex-direction: column; }
+      .filter-input, .filter-select { width: 100%; min-width: auto; }
+    }
   `],
 })
 export class FoodComponent implements OnInit {

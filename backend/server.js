@@ -16,6 +16,7 @@ connectDB();
 // Allow localhost (dev) + deployed Vercel URL (prod) — both from CLIENT_URL
 const allowedOrigins = [
   'http://localhost:4200',
+  'https://campsphere.vercel.app',
   ...(process.env.CLIENT_URL ? [process.env.CLIENT_URL] : []),
 ];
 

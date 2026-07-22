@@ -35,8 +35,8 @@ import { AnimationService } from '../../core/services/animation.service';
 
           <form (ngSubmit)="submit()" #f="ngForm">
             <div class="field">
-              <label for="email">College email or ID</label>
-              <input class="input" id="email" name="email" type="text" [(ngModel)]="email" required placeholder="you@college.edu or College ID" />
+              <label for="email">College ID</label>
+              <input class="input" id="email" name="email" type="text" [(ngModel)]="email" required placeholder="e.g. 1232610" />
             </div>
             <div class="field">
               <label for="password">Password</label>

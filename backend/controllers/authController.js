@@ -62,15 +62,14 @@ exports.login = async (req, res) => {
     });
     
     if (!user) {
-      // Dummy compare to prevent timing attacks
       await bcrypt.compare(password || '', '$2a$10$dummyDummyDummyDummyDummyDummyDummyDummyDummyDummyD');
-      return res.status(401).json({ message: 'Invalid email or password' });
+      return res.status(401).json({ message: 'Invalid College ID or password' });
     }
     if (user.isBlocked) {
       return res.status(403).json({ message: 'Your account has been blocked by an admin.' });
     }
     const match = await bcrypt.compare(password, user.password);
-    if (!match) return res.status(401).json({ message: 'Invalid email or password' });
+    if (!match) return res.status(401).json({ message: 'Invalid College ID or password' });
     const token = signToken(user._id);
     res.json({ token, user: sanitizeUser(user) });
   } catch (err) {

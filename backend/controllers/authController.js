@@ -22,7 +22,7 @@ const sanitizeUser = (user) => ({
 // @route POST /api/auth/register
 exports.register = async (req, res) => {
   try {
-    let { name, collegeId, email, password } = req.body;
+    let { name, collegeId, email, password, adminCode } = req.body;
     if (!name || !collegeId || !password) {
       return res.status(400).json({ message: 'All fields are required' });
     }
@@ -36,9 +36,15 @@ exports.register = async (req, res) => {
     if (existing) {
       return res.status(409).json({ message: 'An account with this email or college ID already exists' });
     }
+    
+    let role = 'student';
+    if (adminCode === 'CAMPIQ_ADMIN_2026') {
+      role = 'admin';
+    }
+
     const hashed = await bcrypt.hash(password, 10);
     const avatarColor = AVATAR_COLORS[Math.floor(Math.random() * AVATAR_COLORS.length)];
-    const user = await User.create({ name, collegeId, email: email.toLowerCase(), password: hashed, avatarColor });
+    const user = await User.create({ name, collegeId, email: email.toLowerCase(), password: hashed, avatarColor, role });
     const token = signToken(user._id);
     res.status(201).json({ token, user: sanitizeUser(user) });
   } catch (err) {

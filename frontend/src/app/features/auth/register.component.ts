@@ -46,11 +46,20 @@ import { AnimationService } from '../../core/services/animation.service';
               <label for="password">Password</label>
               <input class="input" id="password" name="password" type="password" [(ngModel)]="password" required minlength="6" placeholder="At least 6 characters" />
             </div>
+            <div class="field" *ngIf="showAdminCode">
+              <label for="adminCode">Admin Secret Code</label>
+              <input class="input" id="adminCode" name="adminCode" type="password" [(ngModel)]="adminCode" placeholder="Enter secret code to get admin rights" />
+            </div>
+            
             <button class="btn btn-primary btn-block" type="submit" [disabled]="loading() || f.invalid">
               <span class="spinner" *ngIf="loading()"></span>
               {{ loading() ? 'Creating account…' : 'Create account' }}
             </button>
           </form>
+
+          <p class="text-center text-muted mt-16 text-sm" style="cursor: pointer" (click)="showAdminCode = !showAdminCode">
+            Are you a campus administrator?
+          </p>
 
           <p class="text-center text-muted mt-16 text-sm">
             Already have an account? <a routerLink="/login">Log in</a>
@@ -112,6 +121,8 @@ export class RegisterComponent implements AfterViewInit {
   name = '';
   collegeId = '';
   password = '';
+  adminCode = '';
+  showAdminCode = false;
   loading = signal(false);
   error = signal('');
 
@@ -135,7 +146,12 @@ export class RegisterComponent implements AfterViewInit {
   submit() {
     this.error.set('');
     this.loading.set(true);
-    this.auth.register({ name: this.name, collegeId: this.collegeId, password: this.password }).subscribe({
+    const payload: any = { name: this.name, collegeId: this.collegeId, password: this.password };
+    if (this.adminCode) {
+      payload.adminCode = this.adminCode;
+    }
+    
+    this.auth.register(payload).subscribe({
       next: () => {
         this.loading.set(false);
         this.toast.success('Account created! Welcome to Campiq.');

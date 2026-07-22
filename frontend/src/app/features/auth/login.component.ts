@@ -20,7 +20,7 @@ import { AnimationService } from '../../core/services/animation.service';
         <div class="blob blob-3" #blob></div>
         <div class="auth-visual-inner">
           <svg class="visual-logo" viewBox="0 0 24 24"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5"/></svg>
-          <h1>Campsphere</h1>
+          <h1>CampSphere</h1>
           <p class="tagline" style="font-weight: 600; font-size: 1.1rem; color: var(--violet); margin-top: -8px; margin-bottom: 12px;">Your Campus, Connected</p>
           <p>Notes, PYQs, events, trip buddies, food finds &amp; anonymous chat — everything your campus needs, in one place.</p>
         </div>

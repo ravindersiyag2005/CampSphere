@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🎓 Campsphere
+# 🎓 CampSphere
 
 ### *The all-in-one digital campus platform — built on the MEAN stack*
 
@@ -18,7 +18,7 @@
 
 <br/>
 
-> **Campsphere** brings your entire campus life into one sleek platform — share notes, find trip buddies, discover food spots, chat anonymously, and let admins keep everything in order. Dark mode included. Animations too. Zero boring UIs.
+> **CampSphere** brings your entire campus life into one sleek platform — share notes, find trip buddies, discover food spots, chat anonymously, and let admins keep everything in order. Dark mode included. Animations too. Zero boring UIs.
 
 <br/>
 
@@ -157,7 +157,7 @@ npm start                  # Starts on http://localhost:4200
 
 ## 🔐 Anonymous Chat — How It Works
 
-The alias system is one of Campsphere's coolest features:
+The alias system is one of CampSphere's coolest features:
 
 ```
 Student A ──► "Cosmic Falcon 482"  (in Room 1)
@@ -180,7 +180,7 @@ Student A ──► "Lunar Wolf 117"     (in Room 2)   ← different alias, same
 
 ## 👑 Admin Permissions & Moderation
 
-Campsphere provides a comprehensive suite of tools for admins to keep the campus platform safe and organized. Admin accounts have elevated permissions globally:
+CampSphere provides a comprehensive suite of tools for admins to keep the campus platform safe and organized. Admin accounts have elevated permissions globally:
 
 - **Global Content Moderation:** Admins can view and delete *any* post across all modules (Notes, PYQs, Travel, Events, Food, Photoholic), regardless of the content's privacy settings.
 - **Privacy Override:** Private posts (like Photoholic pictures or private Notes) are automatically visible to admins for moderation purposes, bypassing the usual `sharedWith` College ID restrictions.

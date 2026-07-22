@@ -49,7 +49,7 @@ import { environment } from '../environments/environment';
         <div class="brand">
           <svg class="brand-logo" viewBox="0 0 24 24"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5"/></svg>
           <div class="brand-text-wrapper" style="display: flex; flex-direction: column;">
-            <span class="brand-text">Campsphere</span>
+            <span class="brand-text">CampSphere</span>
             <span style="font-size: 10px; color: var(--text-muted); font-weight: 500; letter-spacing: 0.5px;">Your Campus, Connected</span>
           </div>
         </div>

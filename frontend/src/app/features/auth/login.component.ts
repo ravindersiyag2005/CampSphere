@@ -20,7 +20,7 @@ import { AnimationService } from '../../core/services/animation.service';
         <div class="blob blob-3" #blob></div>
         <div class="auth-visual-inner">
           <svg class="visual-logo" viewBox="0 0 24 24"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5"/></svg>
-          <h1>Campiq</h1>
+          <h1>Campsphere</h1>
           <p class="tagline" style="font-weight: 600; font-size: 1.1rem; color: var(--violet); margin-top: -8px; margin-bottom: 12px;">Your Campus, Connected</p>
           <p>Notes, PYQs, events, trip buddies, food finds &amp; anonymous chat — everything your campus needs, in one place.</p>
         </div>
@@ -35,8 +35,8 @@ import { AnimationService } from '../../core/services/animation.service';
 
           <form (ngSubmit)="submit()" #f="ngForm">
             <div class="field">
-              <label for="email">College ID</label>
-              <input class="input" id="email" name="email" type="text" [(ngModel)]="email" required placeholder="e.g. 1232610" />
+              <label for="collegeId">College ID</label>
+              <input class="input" id="collegeId" name="collegeId" type="text" [(ngModel)]="collegeId" required placeholder="e.g. 1232610" />
             </div>
             <div class="field">
               <label for="password">Password</label>
@@ -105,7 +105,7 @@ export class LoginComponent implements AfterViewInit {
   @ViewChild('card') cardRef?: ElementRef<HTMLElement>;
   @ViewChildren('blob') blobRefs!: QueryList<ElementRef<HTMLElement>>;
 
-  email = '';
+  collegeId = '';
   password = '';
   loading = signal(false);
   error = signal('');
@@ -130,7 +130,7 @@ export class LoginComponent implements AfterViewInit {
   submit() {
     this.error.set('');
     this.loading.set(true);
-    this.auth.login({ email: this.email, password: this.password }).subscribe({
+    this.auth.login({ collegeId: this.collegeId, password: this.password }).subscribe({
       next: () => {
         this.loading.set(false);
         this.toast.success('Welcome back!');

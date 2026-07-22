@@ -20,7 +20,7 @@ import { AnimationService } from '../../core/services/animation.service';
         <div class="blob blob-3" #blob></div>
         <div class="auth-visual-inner">
           <svg class="visual-logo" viewBox="0 0 24 24"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5"/></svg>
-          <h1>Join Campiq</h1>
+          <h1>Join Campsphere</h1>
           <p class="tagline" style="font-weight: 600; font-size: 1.1rem; color: var(--violet); margin-top: -8px; margin-bottom: 12px;">Your Campus, Connected</p>
           <p>Sign up with your college ID to share notes, find a travel buddy, or just vent anonymously with your batch.</p>
         </div>
@@ -154,7 +154,7 @@ export class RegisterComponent implements AfterViewInit {
     this.auth.register(payload).subscribe({
       next: () => {
         this.loading.set(false);
-        this.toast.success('Account created! Welcome to Campiq.');
+        this.toast.success('Account created! Welcome to Campsphere.');
         this.router.navigate(['/dashboard']);
       },
       error: (err) => {

@@ -43,13 +43,13 @@ type Tab = 'overview' | 'users' | 'chat' | 'reports' | 'blocklist';
         <div class="table-container" *ngIf="users().length; else emptyUsers">
           <table class="admin-table">
             <thead>
-              <tr><th>Name</th><th>College ID</th><th>Email</th><th>Reputation</th><th>Status</th><th></th></tr>
+              <tr><th>Name</th><th>College ID</th><th>Reputation</th><th>Status</th><th></th></tr>
             </thead>
             <tbody>
               <tr *ngFor="let u of users()">
                 <td>{{ u.name }}</td>
                 <td class="mono">{{ u.collegeId }}</td>
-                <td>{{ u.email }}</td>
+
                 <td>{{ u.reputationScore }}</td>
                 <td><span class="badge" [class]="u.isBlocked ? 'badge-coral' : 'badge-teal'">{{ u.isBlocked ? 'Blocked' : 'Active' }}</span></td>
                 <td>

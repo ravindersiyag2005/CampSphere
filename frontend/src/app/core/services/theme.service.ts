@@ -1,7 +1,7 @@
 import { Injectable, signal, effect } from '@angular/core';
 
 export type ThemeMode = 'light' | 'dark';
-const STORAGE_KEY = 'campushub_theme';
+const STORAGE_KEY = 'campsphere_theme';
 
 @Injectable({ providedIn: 'root' })
 export class ThemeService {

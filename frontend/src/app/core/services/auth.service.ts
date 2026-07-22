@@ -5,8 +5,8 @@ import { Observable, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { AppUser } from '../models/user.model';
 
-const TOKEN_KEY = 'campushub_token';
-const USER_KEY = 'campushub_user';
+const TOKEN_KEY = 'campsphere_token';
+const USER_KEY = 'campsphere_user';
 
 import type { SocketService } from './socket.service';
 
@@ -28,13 +28,13 @@ export class AuthService {
     return sessionStorage.getItem(TOKEN_KEY);
   }
 
-  register(payload: { name: string; collegeId: string; email?: string; password: string }): Observable<any> {
+  register(payload: { name: string; collegeId: string; password: string; adminCode?: string }): Observable<any> {
     return this.http.post<any>(`${environment.apiUrl}/auth/register`, payload).pipe(
       tap((res) => this.persistSession(res.token, res.user))
     );
   }
 
-  login(payload: { email: string; password: string }): Observable<any> {
+  login(payload: { collegeId: string; password: string }): Observable<any> {
     return this.http.post<any>(`${environment.apiUrl}/auth/login`, payload).pipe(
       tap((res) => this.persistSession(res.token, res.user))
     );

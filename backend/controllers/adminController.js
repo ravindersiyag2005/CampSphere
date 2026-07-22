@@ -39,7 +39,7 @@ exports.setBlocked = async (req, res) => {
 // Admin sees REAL identity behind every message (alias-masking bypass for admins)
 exports.roomMessagesWithIdentity = async (req, res) => {
   const messages = await Message.find({ roomId: req.params.roomId })
-    .populate('senderId', 'name collegeId email')
+    .populate('senderId', 'name collegeId')
     .sort({ createdAt: 1 })
     .limit(500);
   res.json(messages);
@@ -48,7 +48,7 @@ exports.roomMessagesWithIdentity = async (req, res) => {
 // @route GET /api/admin/chat/conversations
 exports.allConversations = async (req, res) => {
   const convos = await Conversation.find()
-    .populate('participants', 'name collegeId email')
+    .populate('participants', 'name collegeId')
     .sort({ lastMessageAt: -1 });
   res.json(convos);
 };
@@ -56,7 +56,7 @@ exports.allConversations = async (req, res) => {
 // @route GET /api/admin/chat/conversations/:id/messages
 exports.conversationMessagesWithIdentity = async (req, res) => {
   const messages = await Message.find({ conversationId: req.params.id })
-    .populate('senderId', 'name collegeId email')
+    .populate('senderId', 'name collegeId')
     .sort({ createdAt: 1 });
   res.json(messages);
 };
@@ -64,7 +64,7 @@ exports.conversationMessagesWithIdentity = async (req, res) => {
 // @route GET /api/admin/reports
 exports.listReports = async (req, res) => {
   const reports = await Report.find()
-    .populate('reportedUser', 'name collegeId email')
+    .populate('reportedUser', 'name collegeId')
     .populate('reportedBy', 'name collegeId')
     .populate('messageId')
     .sort({ createdAt: -1 });

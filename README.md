@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🎓 Campiq
+# 🎓 Campsphere
 
 ### *The all-in-one digital campus platform — built on the MEAN stack*
 
@@ -18,7 +18,7 @@
 
 <br/>
 
-> **Campiq** brings your entire campus life into one sleek platform — share notes, find trip buddies, discover food spots, chat anonymously, and let admins keep everything in order. Dark mode included. Animations too. Zero boring UIs.
+> **Campsphere** brings your entire campus life into one sleek platform — share notes, find trip buddies, discover food spots, chat anonymously, and let admins keep everything in order. Dark mode included. Animations too. Zero boring UIs.
 
 <br/>
 
@@ -157,7 +157,7 @@ npm start                  # Starts on http://localhost:4200
 
 ## 🔐 Anonymous Chat — How It Works
 
-The alias system is one of Campiq's coolest features:
+The alias system is one of Campsphere's coolest features:
 
 ```
 Student A ──► "Cosmic Falcon 482"  (in Room 1)
@@ -180,7 +180,7 @@ Student A ──► "Lunar Wolf 117"     (in Room 2)   ← different alias, same
 
 ## 👑 Admin Permissions & Moderation
 
-Campiq provides a comprehensive suite of tools for admins to keep the campus platform safe and organized. Admin accounts have elevated permissions globally:
+Campsphere provides a comprehensive suite of tools for admins to keep the campus platform safe and organized. Admin accounts have elevated permissions globally:
 
 - **Global Content Moderation:** Admins can view and delete *any* post across all modules (Notes, PYQs, Travel, Events, Food, Photoholic), regardless of the content's privacy settings.
 - **Privacy Override:** Private posts (like Photoholic pictures or private Notes) are automatically visible to admins for moderation purposes, bypassing the usual `sharedWith` College ID restrictions.
@@ -244,7 +244,7 @@ Click the **☀️ / 🌙** switch in the sidebar. It:
 Copy `backend/.env.example` → `backend/.env` and fill in:
 
 ```env
-MONGO_URI=mongodb://127.0.0.1:27017/campushub
+MONGO_URI=mongodb://127.0.0.1:27017/campsphere
 JWT_SECRET=your_super_secret_key
 PORT=5000
 ```

@@ -11,7 +11,7 @@ const sanitizeUser = (user) => ({
   id: user._id,
   name: user.name,
   collegeId: user.collegeId,
-  email: user.email,
+
   role: user.role,
   reputationScore: user.reputationScore,
   contributionPoints: user.contributionPoints,
@@ -22,24 +22,21 @@ const sanitizeUser = (user) => ({
 // @route POST /api/auth/register
 exports.register = async (req, res) => {
   try {
-    let { name, collegeId, email, password, adminCode } = req.body;
+    let { name, collegeId, password, adminCode } = req.body;
     if (!name || !collegeId || !password) {
       return res.status(400).json({ message: 'All fields are required' });
     }
     if (password.length < 6) {
       return res.status(400).json({ message: 'Password must be at least 6 characters' });
     }
-    if (!email || !email.trim()) {
-      email = `${collegeId.toLowerCase().trim()}@campushub.edu`;
-    }
-    const existing = await User.findOne({ $or: [{ email: email.toLowerCase() }, { collegeId }] });
+    const existing = await User.findOne({ collegeId });
     if (existing) {
-      return res.status(409).json({ message: 'An account with this email or college ID already exists' });
+      return res.status(409).json({ message: 'An account with this college ID already exists' });
     }
     
     let role = 'student';
     // Fallback to the default code if the environment variable is missing (useful for local development)
-    const adminSecret = process.env.ADMIN_SECRET_CODE || 'CAMPIQ_ADMIN_2026';
+    const adminSecret = process.env.ADMIN_SECRET_CODE || 'CAMPSPHERE_ADMIN_2026';
     
     if (adminCode && adminCode === adminSecret) {
       role = 'admin';
@@ -47,7 +44,7 @@ exports.register = async (req, res) => {
 
     const hashed = await bcrypt.hash(password, 10);
     const avatarColor = AVATAR_COLORS[Math.floor(Math.random() * AVATAR_COLORS.length)];
-    const user = await User.create({ name, collegeId, email: email.toLowerCase(), password: hashed, avatarColor, role });
+    const user = await User.create({ name, collegeId, password: hashed, avatarColor, role });
     const token = signToken(user._id);
     res.status(201).json({ token, user: sanitizeUser(user) });
   } catch (err) {
@@ -58,8 +55,8 @@ exports.register = async (req, res) => {
 // @route POST /api/auth/login
 exports.login = async (req, res) => {
   try {
-    const { email, password } = req.body;
-    const loginId = (email || '').toLowerCase().trim();
+    const { collegeId, password } = req.body;
+    const loginId = (collegeId || '').toLowerCase().trim();
     const escapeRegex = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const safeLoginId = escapeRegex(loginId);
     

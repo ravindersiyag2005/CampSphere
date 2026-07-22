@@ -135,13 +135,13 @@ cp .env.example .env       # Fill in your Mongo URI + JWT secret
 npm run dev                # Starts on http://localhost:5000 via nodemon
 ```
 
-**Seed the database** (creates default admin + 3 starter chat rooms):
+**Seed the database** (creates a test user + 3 starter chat rooms):
 
 ```bash
 node seed.js
 ```
 
-> 🔑 **Default admin credentials:** College ID `1232610` / password `1232610`
+> 🔑 **Test User credentials:** College ID `1232610` / password `1232610`
 
 ### 3️⃣ Frontend setup
 

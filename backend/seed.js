@@ -1,5 +1,5 @@
 // Run with: node seed.js
-// Creates a default admin account and a few chat rooms.
+// Creates a test student account and a few chat rooms.
 require('dotenv').config();
 const bcrypt = require('bcryptjs');
 const connectDB = require('./config/db');
@@ -11,14 +11,14 @@ const ChatRoom = require('./models/ChatRoom');
 
   await User.deleteMany({ collegeId: '1232610' });
   const hashed = await bcrypt.hash('1232610', 10);
-  admin = await User.create({
-    name: 'Campus Admin',
+  const testUser = await User.create({
+    name: 'Test Student',
     collegeId: '1232610',
 
     password: hashed,
-    role: 'admin',
+    role: 'student',
   });
-  console.log('Created admin collegeId: 1232610 / password: 1232610');
+  console.log('Created test student collegeId: 1232610 / password: 1232610');
 
   const defaultRooms = [
     { name: 'General Campus Chat', subject: 'General', description: 'Talk about anything campus related' },
@@ -28,7 +28,7 @@ const ChatRoom = require('./models/ChatRoom');
   for (const r of defaultRooms) {
     const exists = await ChatRoom.findOne({ name: r.name });
     if (!exists) {
-      await ChatRoom.create({ ...r, createdBy: admin._id });
+      await ChatRoom.create({ ...r, createdBy: testUser._id });
       console.log('Created room:', r.name);
     }
   }

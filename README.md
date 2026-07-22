@@ -178,6 +178,19 @@ Student A ──► "Lunar Wolf 117"     (in Room 2)   ← different alias, same
 
 ---
 
+## 👑 Admin Permissions & Moderation
+
+Campiq provides a comprehensive suite of tools for admins to keep the campus platform safe and organized. Admin accounts have elevated permissions globally:
+
+- **Global Content Moderation:** Admins can view and delete *any* post across all modules (Notes, PYQs, Travel, Events, Food, Photoholic), regardless of the content's privacy settings.
+- **Privacy Override:** Private posts (like Photoholic pictures or private Notes) are automatically visible to admins for moderation purposes, bypassing the usual `sharedWith` College ID restrictions.
+- **User Management:** Full ability to view all registered students, manage accounts, and block/unblock malicious users from the platform.
+- **Chat Transparency:** While students see anonymous aliases in chat rooms, admins always see the *real name and College ID* of the message sender to ensure accountability.
+- **Automated Reporting Queue:** Messages reported 3 times are auto-hidden and sent to the admin dashboard for manual review.
+- **Word Filter:** Admins can configure a global blocklist of inappropriate words that the server actively prevents from being sent in any chat room.
+
+---
+
 ## 🎨 Design System
 
 The entire app uses a **"golden-hour campus quad"** palette:

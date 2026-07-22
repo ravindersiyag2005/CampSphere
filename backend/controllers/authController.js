@@ -64,10 +64,7 @@ exports.login = async (req, res) => {
     const safeLoginId = escapeRegex(loginId);
     
     const user = await User.findOne({
-      $or: [
-        { email: loginId },
-        { collegeId: { $regex: new RegExp('^' + safeLoginId + '$', 'i') } }
-      ]
+      collegeId: { $regex: new RegExp('^' + safeLoginId + '$', 'i') }
     });
     
     if (!user) {

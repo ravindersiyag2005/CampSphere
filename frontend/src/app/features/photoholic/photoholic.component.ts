@@ -1001,16 +1001,35 @@ export class PhotoholicComponent implements OnInit {
     const post = this.selectedPost();
     if (!post || !this.newCommentText.trim()) return;
 
+    const commentText = this.newCommentText.trim();
+    this.newCommentText = '';
     this.commenting.set(true);
-    this.postService.addComment(post._id, this.newCommentText).subscribe({
+
+    // Optimistic UI Update
+    const tempId = 'temp-' + Date.now();
+    const mockComment = {
+      _id: tempId,
+      text: commentText,
+      commentedBy: {
+        _id: this.currentUser.id,
+        name: this.currentUser.name
+      },
+      createdAt: new Date().toISOString()
+    };
+    post.comments.push(mockComment);
+
+    this.postService.addComment(post._id, commentText).subscribe({
       next: (comment) => {
-        // Append comment locally
-        post.comments.push(comment);
-        this.newCommentText = '';
+        // Replace temp comment with real one from server
+        const idx = post.comments.findIndex(c => c._id === tempId);
+        if (idx !== -1) {
+          post.comments[idx] = comment;
+        }
         this.commenting.set(false);
-        this.toast.success('Comment added!');
       },
       error: (err) => {
+        // Remove temp comment on failure
+        post.comments = post.comments.filter(c => c._id !== tempId);
         this.toast.error('Failed to add comment.');
         this.commenting.set(false);
       },

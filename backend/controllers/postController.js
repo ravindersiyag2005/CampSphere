@@ -13,6 +13,12 @@ exports.createPost = async (req, res) => {
       sharedWith: sharedWith ? sharedWith.split(',').map(id => id.trim()).filter(Boolean) : []
     });
     const populated = await Post.findById(post._id).populate('uploadedBy', 'name avatarColor');
+    
+    const io = req.app.get('io');
+    if (io && (!isPrivate || isPrivate === 'false')) {
+      io.emit('photoholic:newPost', populated);
+    }
+    
     res.status(201).json(populated);
   } catch (err) {
     res.status(500).json({ message: 'Failed to create post', error: err.message });
@@ -61,6 +67,17 @@ exports.toggleLike = async (req, res) => {
     }
     
     await post.save();
+    
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('photoholic:updateLikes', { 
+        postId: post._id, 
+        likesCount: post.likes.length, 
+        likedBy: req.user._id, 
+        isLiked: index === -1 
+      });
+    }
+    
     res.json({ likesCount: post.likes.length, liked: index === -1 });
   } catch (err) {
     res.status(500).json({ message: 'Failed to toggle like', error: err.message });
@@ -83,6 +100,11 @@ exports.addComment = async (req, res) => {
     
     const populatedPost = await Post.findById(post._id).populate('comments.commentedBy', 'name');
     const addedComment = populatedPost.comments[populatedPost.comments.length - 1];
+    
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('photoholic:newComment', { postId: post._id, comment: addedComment });
+    }
     
     res.status(201).json(addedComment);
   } catch (err) {

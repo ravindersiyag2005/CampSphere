@@ -68,6 +68,7 @@ app.use((err, req, res, next) => {
 const io = new Server(server, {
   cors: corsOptions,
 });
+app.set('io', io);
 initChatSocket(io);
 
 const PORT = process.env.PORT || 5000;

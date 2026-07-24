@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -6,6 +6,7 @@ import { PostService } from '../../core/services/post.service';
 import { AuthService } from '../../core/services/auth.service';
 import { ToastService } from '../../core/services/toast.service';
 import { AnimationService } from '../../core/services/animation.service';
+import { SocketService } from '../../core/services/socket.service';
 
 interface Post {
   _id: string;
@@ -843,7 +844,7 @@ interface Post {
     }
   `],
 })
-export class PhotoholicComponent implements OnInit {
+export class PhotoholicComponent implements OnInit, OnDestroy {
   @ViewChild('postsList') postsListRef?: ElementRef<HTMLElement>;
   
   posts: Post[] = [];
@@ -880,14 +881,65 @@ export class PhotoholicComponent implements OnInit {
     private postService: PostService,
     private authService: AuthService,
     private toast: ToastService,
-    private anim: AnimationService
+    private anim: AnimationService,
+    private socketService: SocketService
   ) {}
+
+  private socket: any;
 
   ngOnInit() {
     this.currentUser = this.authService.currentUser();
     this.loadPosts();
     // Clear unread badge
     this.postService.markSeen().subscribe();
+    this.setupSocketListeners();
+  }
+
+  setupSocketListeners() {
+    this.socket = this.socketService.instance;
+    
+    this.socket.on('photoholic:newPost', (post: any) => {
+      if ((this.activeTab === 'private' && post.isPrivate) || (this.activeTab === 'public' && !post.isPrivate)) {
+        if (!this.posts.some(p => p._id === post._id)) {
+           const p = { ...post, liked: false, likeHeartActive: false };
+           if (p.imageUrl && p.imageUrl.startsWith('http://')) {
+             p.imageUrl = p.imageUrl.replace('http://', 'https://');
+           }
+           this.posts.unshift(p);
+        }
+      }
+    });
+
+    this.socket.on('photoholic:updateLikes', (data: any) => {
+      const { postId, likesCount, likedBy, isLiked } = data;
+      const p = this.posts.find(p => p._id === postId);
+      if (p) {
+        if (likedBy !== this.currentUser?.id) {
+           if (isLiked && !p.likes.includes(likedBy)) p.likes.push(likedBy);
+           if (!isLiked) p.likes = p.likes.filter(id => id !== likedBy);
+        }
+      }
+    });
+
+    this.socket.on('photoholic:newComment', (data: any) => {
+      const { postId, comment } = data;
+      const p = this.posts.find(p => p._id === postId);
+      if (p) {
+        if (comment.commentedBy._id !== this.currentUser?.id) {
+           if (!p.comments.some(c => c._id === comment._id)) {
+             p.comments.push(comment);
+           }
+        }
+      }
+    });
+  }
+
+  ngOnDestroy() {
+    if (this.socket) {
+      this.socket.off('photoholic:newPost');
+      this.socket.off('photoholic:updateLikes');
+      this.socket.off('photoholic:newComment');
+    }
   }
 
   setTab(tab: 'public' | 'private') {

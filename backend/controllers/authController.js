@@ -133,7 +133,7 @@ exports.updateAvatar = async (req, res) => {
     if (!req.file) {
       return res.status(400).json({ message: 'No image file uploaded' });
     }
-    const avatarUrl = `/uploads/${req.file.filename}`;
+    const avatarUrl = req.file.path;
     const user = await User.findByIdAndUpdate(req.user._id, { avatarUrl }, { new: true });
     res.json({ user: sanitizeUser(user) });
   } catch (err) {

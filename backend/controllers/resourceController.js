@@ -56,7 +56,7 @@ exports.create = async (req, res) => {
       type,
       examType: type === 'pyq' ? examType : undefined,
       year: type === 'pyq' && year ? Number(year) : undefined,
-      fileUrl: `/uploads/${req.file.filename}`,
+      fileUrl: req.file.path,
       fileName: req.file.originalname,
       uploadedBy: req.user._id,
       tags: parsedTags,

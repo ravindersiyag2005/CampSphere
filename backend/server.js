@@ -11,6 +11,8 @@ const rateLimit = require('express-rate-limit');
 const app = express();
 const server = http.createServer(app);
 
+app.set('trust proxy', 1); // Trust the reverse proxy (Render) to properly set req.protocol
+
 connectDB();
 
 // Allow localhost (dev) + deployed Vercel URL (prod) — both from CLIENT_URL

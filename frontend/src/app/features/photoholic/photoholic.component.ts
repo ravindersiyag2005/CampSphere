@@ -1176,7 +1176,9 @@ export class PhotoholicComponent implements OnInit, OnDestroy {
         };
         // Add to front of posts if it matches the current tab view
         if ((this.activeTab === 'private' && this.isPrivate) || (this.activeTab === 'public' && !this.isPrivate)) {
-          this.posts.unshift(prep);
+          if (!this.posts.some(p => p._id === newPost._id)) {
+            this.posts.unshift(prep);
+          }
         }
         
         this.toast.success('Moment shared successfully!');

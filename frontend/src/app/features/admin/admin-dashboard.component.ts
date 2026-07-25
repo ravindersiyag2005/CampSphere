@@ -70,14 +70,18 @@ type Tab = 'overview' | 'users' | 'chat' | 'reports' | 'blocklist';
           <h4>Rooms</h4>
           <div class="monitor-item-row" *ngFor="let r of rooms()" [class.active]="selectedRoom() === r._id">
             <button class="monitor-item-btn" (click)="loadRoomMonitor(r)">
-              💬 {{ r.name }}
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; height: 16px; margin-right: 6px; vertical-align: -3px;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              {{ r.name }}
             </button>
             <button class="delete-room-btn" (click)="deleteRoom(r, $event)" title="Delete room">✕</button>
           </div>
           <h4 class="mt-16">Anonymous DMs</h4>
-          <button class="monitor-item" *ngFor="let c of conversations()" [class.active]="selectedConvo() === c._id" (click)="loadConvoMonitor(c)">
-            🕶️ {{ c.participants[0]?.name }} ↔ {{ c.participants[1]?.name }}
-          </button>
+          <div class="monitor-item-row" *ngFor="let c of conversations()" [class.active]="selectedConvo() === c._id">
+            <button class="monitor-item-btn" (click)="loadConvoMonitor(c)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; height: 16px; margin-right: 6px; vertical-align: -3px;"><path d="M22.5 13.5l-2.4-7.2a2 2 0 0 0-1.9-1.3h-12.4a2 2 0 0 0-1.9 1.3l-2.4 7.2"/><circle cx="6" cy="15" r="3"/><circle cx="18" cy="15" r="3"/><path d="M9 15h6"/></svg>
+              {{ c.participants[0]?.name?.split(' ')[0] }} <span class="text-muted" style="margin: 0 3px;">↔</span> {{ c.participants[1]?.name?.split(' ')[0] }}
+            </button>
+          </div>
         </div>
 
         <div class="card monitor-main">

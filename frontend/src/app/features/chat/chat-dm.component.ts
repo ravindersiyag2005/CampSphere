@@ -28,7 +28,10 @@ interface DmMsg {
 
       <div class="chat-header">
         <div class="term-dots"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span></div>
-        <a routerLink="/chat" class="back-link">← rooms</a>
+        <a routerLink="/chat" class="back-link" title="Back to groups">
+          <svg viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" d="M19 12H5M12 19l-7-7 7-7"/></svg>
+          <span class="back-text">rooms</span>
+        </a>
         <span class="path-sep">/</span>
         <span class="room-path">private-dm</span>
         <div class="who-am-i">
@@ -80,22 +83,29 @@ interface DmMsg {
     </div>
   `,
   styles: [`
-    .chat-page { position: relative; display: flex; flex-direction: column; height: 100vh; background: #05060a; overflow: hidden; }
+    .chat-page { position: relative; display: flex; flex-direction: column; height: 100vh; background: var(--bg); overflow: hidden; }
+    html[data-theme='dark'] .chat-page { background: #05060a; }
 
     .rain-canvas { position: absolute; inset: 0; z-index: 0; opacity: 0.18; pointer-events: none; }
 
     .chat-header {
       position: relative; z-index: 1;
-      display: flex; align-items: center; gap: 10px;
-      padding: 14px 24px; border-bottom: 1px solid rgba(0,242,254,0.15);
-      background: rgba(6, 7, 13, 0.9); backdrop-filter: blur(10px);
+      display: flex; align-items: center; gap: 14px;
+      padding: 14px 24px; border-bottom: 1px solid var(--border);
+      background: var(--surface);
       font-family: var(--font-mono); font-size: 13px;
+    }
+    html[data-theme='dark'] .chat-header {
+      border-bottom-color: rgba(0,242,254,0.15);
+      background: rgba(6, 7, 13, 0.9); backdrop-filter: blur(10px);
     }
     .term-dots { display: flex; gap: 5px; margin-right: 6px; }
     .term-dots .dot { width: 9px; height: 9px; border-radius: 50%; }
     .dot.r { background: #ff5f57; } .dot.y { background: #febc2e; } .dot.g { background: #28c840; }
-    .back-link { font-weight: 600; color: var(--violet); white-space: nowrap; }
-    .path-sep { color: var(--text-faint); }
+    .back-link { display: flex; align-items: center; gap: 6px; font-weight: 600; color: var(--text-muted); text-decoration: none; transition: all 0.2s ease; background: rgba(255,255,255,0.03); padding: 4px 10px 4px 8px; border-radius: var(--radius-pill); border: 1px solid rgba(255,255,255,0.05); }
+    .back-link:hover { color: var(--violet); background: rgba(0,242,254,0.08); border-color: rgba(0,242,254,0.2); }
+    .back-link svg { width: 14px; height: 14px; }
+    .path-sep { color: var(--text-faint); margin: 0 4px; }
     .room-path { color: var(--coral); }
     .who-am-i { margin-left: auto; font-size: 12.5px; color: var(--text-muted); display: flex; align-items: center; gap: 6px; white-space: nowrap; }
 
@@ -130,33 +140,49 @@ interface DmMsg {
     .msg-row.mine { align-self: flex-end; }
 
     .bubble {
-      background: rgba(15, 17, 26, 0.82);
-      backdrop-filter: blur(8px);
-      border: 1px solid rgba(0,242,254,0.15);
+      background: var(--surface);
+      border: 1px solid var(--border);
       border-radius: var(--radius-md);
       padding: 10px 14px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+      box-shadow: var(--shadow-sm);
       font-family: var(--font-mono);
     }
-    .msg-row.mine .bubble { background: linear-gradient(135deg, rgba(0,242,254,0.24), rgba(0,184,255,0.18)); border-color: rgba(0,242,254,0.4); color: #eafffe; }
+    html[data-theme='dark'] .bubble {
+      background: rgba(15, 17, 26, 0.82);
+      backdrop-filter: blur(8px);
+      border-color: rgba(0,242,254,0.15);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    }
+    .msg-row.mine .bubble { background: var(--violet); border-color: var(--violet-deep); color: #fff; }
+    html[data-theme='dark'] .msg-row.mine .bubble { background: linear-gradient(135deg, rgba(0,242,254,0.24), rgba(0,184,255,0.18)); border-color: rgba(0,242,254,0.4); color: #eafffe; }
     .prompt-sign { color: var(--violet); font-weight: 700; margin-right: 8px; }
-    .bubble-text { font-size: 14px; line-height: 1.5; word-break: break-word; color: #e2e8f0; }
+    .bubble-text { font-size: 14px; line-height: 1.5; word-break: break-word; color: var(--ink); }
+    .msg-row.mine .bubble-text { color: #fff; }
+    html[data-theme='dark'] .bubble-text { color: #e2e8f0; }
+    html[data-theme='dark'] .msg-row.mine .bubble-text { color: #eafffe; }
     .bubble-time { font-size: 10px; opacity: 0.5; margin-top: 4px; text-align: right; }
 
     .composer {
       position: relative; z-index: 1;
       display: flex; align-items: center; gap: 10px; padding: 14px 24px;
-      border-top: 1px solid rgba(0,242,254,0.12); background: rgba(6, 7, 13, 0.9); backdrop-filter: blur(10px);
+      border-top: 1px solid var(--border); background: var(--surface);
     }
-    .composer-prompt { font-family: var(--font-mono); color: var(--coral); font-size: 13px; white-space: nowrap; text-shadow: 0 0 6px rgba(243,85,136,0.4); }
-    .composer-input { flex: 1; font-family: var(--font-mono); background: rgba(15,17,26,0.8); border-color: rgba(0,242,254,0.2); color: #e2e8f0; }
-    .composer-input::placeholder { color: rgba(0,242,254,0.35); }
+    html[data-theme='dark'] .composer { border-top-color: rgba(0,242,254,0.12); background: rgba(6, 7, 13, 0.9); backdrop-filter: blur(10px); }
+    .composer-prompt { font-family: var(--font-mono); color: var(--teal); font-size: 13px; white-space: nowrap; }
+    html[data-theme='dark'] .composer-prompt { color: var(--coral); text-shadow: 0 0 6px rgba(243,85,136,0.4); }
+    .composer-input { flex: 1; font-family: var(--font-mono); background: var(--surface-alt); border-color: var(--border); color: var(--ink); }
+    html[data-theme='dark'] .composer-input { background: rgba(15,17,26,0.8); border-color: rgba(0,242,254,0.2); color: #e2e8f0; }
+    .composer-input::placeholder { color: var(--text-faint); }
+    html[data-theme='dark'] .composer-input::placeholder { color: rgba(0,242,254,0.35); }
     .file-preview-bar {
       position: relative; z-index: 1;
       display: flex; align-items: center; justify-content: space-between;
-      padding: 6px 24px; background: rgba(0, 242, 254, 0.08);
-      border-top: 1px solid rgba(0,242,254,0.12);
+      padding: 6px 24px; background: var(--surface-alt);
+      border-top: 1px solid var(--border);
       font-family: var(--font-mono); font-size: 12px; color: var(--violet);
+    }
+    html[data-theme='dark'] .file-preview-bar {
+      background: rgba(0, 242, 254, 0.08); border-top-color: rgba(0,242,254,0.12);
     }
     .clear-file-btn { background: none; border: none; color: var(--coral); cursor: pointer; font-size: 13px; }
     .attach-btn { background: none; border: none; color: var(--text-muted); font-size: 18px; cursor: pointer; transition: color 0.15s; }
@@ -296,12 +322,19 @@ export class ChatDmComponent implements OnInit, OnDestroy, AfterViewChecked, Aft
       if (elapsed < fpsInterval) return;
       lastTime = timestamp - (elapsed % fpsInterval);
 
-      ctx.fillStyle = 'rgba(5, 6, 10, 0.18)';
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      const trailColor = isDark ? 'rgba(5, 6, 10, 0.18)' : 'rgba(248, 250, 252, 0.25)';
+      const rainWhite = isDark ? '#eafffe' : '#64748b';
+      const rainColor = isDark 
+        ? (isMobile ? 'rgba(243, 85, 136, 0.4)' : 'rgba(0, 242, 254, 0.55)')
+        : (isMobile ? 'rgba(225, 29, 72, 0.2)' : 'rgba(129, 140, 248, 0.2)');
+
+      ctx.fillStyle = trailColor;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       ctx.font = '14px "JetBrains Mono", monospace';
       for (let i = 0; i < columns; i++) {
         const char = chars[Math.floor(Math.random() * chars.length)];
-        ctx.fillStyle = Math.random() > 0.94 ? '#eafffe' : (isMobile ? 'rgba(243, 85, 136, 0.4)' : 'rgba(243, 85, 136, 0.5)');
+        ctx.fillStyle = Math.random() > 0.94 ? rainWhite : rainColor;
         ctx.fillText(char, i * spacing, drops[i] * 16);
         if (drops[i] * 16 > canvas.height && Math.random() > 0.975) drops[i] = 0;
         drops[i]++;

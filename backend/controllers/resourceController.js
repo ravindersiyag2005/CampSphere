@@ -49,6 +49,11 @@ exports.create = async (req, res) => {
     if (!req.file) return res.status(400).json({ message: 'File is required' });
     const parsedTags = tags ? tags.split(',').map((t) => t.trim()).filter(Boolean) : [];
     
+    let fileUrl = req.file.path;
+    if (!fileUrl.startsWith('http')) {
+      fileUrl = '/uploads/' + req.file.filename;
+    }
+
     const resource = await Resource.create({
       title,
       subject,
@@ -56,7 +61,7 @@ exports.create = async (req, res) => {
       type,
       examType: type === 'pyq' ? examType : undefined,
       year: type === 'pyq' && year ? Number(year) : undefined,
-      fileUrl: req.file.path,
+      fileUrl: fileUrl,
       fileName: req.file.originalname,
       uploadedBy: req.user._id,
       tags: parsedTags,
@@ -98,8 +103,7 @@ exports.download = async (req, res) => {
 
     resource.downloadCount += 1;
     await resource.save();
-    const filePath = path.join(__dirname, '..', resource.fileUrl);
-    res.download(filePath, resource.fileName || 'file');
+    res.redirect(resource.fileUrl);
   } catch (err) {
     res.status(500).json({ message: 'Download failed', error: err.message });
   }

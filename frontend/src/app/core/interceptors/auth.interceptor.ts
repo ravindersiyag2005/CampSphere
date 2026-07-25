@@ -14,13 +14,17 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   return next(cloned).pipe(
     catchError((err) => {
       const message = err?.error?.message || 'Something went wrong. Please try again.';
+      const isAuthRoute = req.url.includes('/login') || req.url.includes('/register');
+
       if (err.status === 401) {
-        toast.error('Session expired. Please log in again.');
-        auth.logout();
+        if (!isAuthRoute && auth.token) {
+          toast.error('Session expired. Please log in again.');
+          auth.logout();
+        }
       } else if (err.status === 403 && message.toLowerCase().includes('blocked')) {
         toast.error(message);
         auth.logout();
-      } else {
+      } else if (!isAuthRoute) {
         toast.error(message);
       }
       return throwError(() => err);

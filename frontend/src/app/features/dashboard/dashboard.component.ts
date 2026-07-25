@@ -21,7 +21,13 @@ interface ModuleCard {
     <div class="page page--dashboard">
       <section class="hero" #hero>
         <div class="hero-text">
-          <div class="eyebrow">👋 {{ greeting() }}</div>
+          <div class="eyebrow">
+            <span class="greeting-icon">
+              <svg *ngIf="isDayTime()" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+              <svg *ngIf="!isDayTime()" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+            </span> 
+            {{ greeting() }}
+          </div>
           <h1>Hey {{ firstName() }}, what are we sorting out today?</h1>
           <p class="text-muted">
             Share notes, hunt down last year's papers, find a ride home, discover the best canteen dish,
@@ -60,34 +66,32 @@ interface ModuleCard {
       align-items: flex-start;
       gap: 24px;
       flex-wrap: wrap;
-      background:
-        radial-gradient(circle at 15% 20%, rgba(0,242,254,0.35), transparent 55%),
-        radial-gradient(circle at 85% 80%, rgba(255,0,127,0.30), transparent 55%),
-        linear-gradient(135deg, #150e3d 0%, #241a5e 55%, #0d2a3a 100%);
+      background: var(--surface);
       border-radius: var(--radius-lg);
       padding: 40px;
-      color: #fff;
       position: relative;
       overflow: hidden;
-      border: 1px solid rgba(0,242,254,0.18);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-sm);
     }
     .hero-text { position: relative; z-index: 1; max-width: 620px; }
-    .hero .eyebrow { color: var(--amber); text-shadow: 0 0 8px rgba(255,184,0,0.5); }
-    .hero h1 { font-family: var(--font-display-alt); color: #fff; font-size: 30px; margin-bottom: 10px; letter-spacing: -0.01em; }
-    .hero p.text-muted { color: rgba(255,255,255,0.82); }
+    .hero .eyebrow { color: var(--violet); display: flex; align-items: center; gap: 6px; }
+    .greeting-icon { display: inline-flex; }
+    .greeting-icon ::ng-deep svg { width: 16px; height: 16px; stroke: var(--violet); stroke-width: 2.5; }
+    .hero h1 { font-family: var(--font-display-alt); color: var(--ink); font-size: 30px; margin-bottom: 10px; letter-spacing: -0.01em; }
+    .hero p.text-muted { color: var(--text-muted); }
 
     .hero-stats { display: flex; gap: 14px; position: relative; z-index: 1; }
     .stat-chip {
-      background: rgba(255,255,255,0.1);
-      backdrop-filter: blur(8px);
-      border: 1px solid rgba(255,255,255,0.14);
+      background: var(--surface-alt);
+      border: 1px solid var(--border);
       border-radius: var(--radius-md);
       padding: 14px 22px;
       text-align: center;
       min-width: 116px;
     }
-    .stat-num { display: block; font-family: var(--font-display-alt); font-size: 28px; font-weight: 800; color: #fff; }
-    .stat-label { font-size: 11px; color: rgba(255,255,255,0.75); text-transform: uppercase; letter-spacing: 0.08em; }
+    .stat-num { display: block; font-family: var(--font-display-alt); font-size: 28px; font-weight: 800; color: var(--ink); }
+    .stat-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; }
 
     .module-card {
       position: relative;
@@ -97,18 +101,19 @@ interface ModuleCard {
       display: flex;
       flex-direction: column;
       justify-content: flex-end;
-      border: 1px solid rgba(255, 255, 255, 0.05);
-      background-color: #07080f;
+      border: 1px solid var(--border);
+      background-color: var(--surface);
       background-size: 100% 100%, 14px 14px;
       overflow: hidden;
       transition: transform 0.25s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.25s ease, border-color 0.25s ease;
-      color: #f4f6fc;
+      color: var(--ink);
       text-decoration: none;
+      box-shadow: var(--shadow-sm);
     }
     .module-card:hover {
       transform: translateY(-5px) scale(1.01);
       border-color: var(--card-glow, var(--violet));
-      box-shadow: 0 12px 34px rgba(0,0,0,0.4), 0 0 0 1px var(--card-glow, var(--violet)), 0 0 28px -4px var(--card-glow, var(--violet));
+      box-shadow: var(--shadow-md), 0 0 0 1px var(--card-glow, var(--violet));
     }
     .module-icon {
       margin-bottom: 8px;
@@ -123,14 +128,13 @@ interface ModuleCard {
       stroke-linecap: round;
       stroke-linejoin: round;
       fill: none;
-      filter: drop-shadow(0 0 5px var(--card-glow, var(--violet)));
       transition: transform 0.25s ease;
     }
     .module-card:hover .module-icon ::ng-deep svg {
       transform: translateY(-2px) scale(1.05);
     }
-    .module-card h3 { font-family: var(--font-display-alt); font-size: 18px; margin-bottom: 2px; color: #fff; }
-    .module-card p.text-sm { color: rgba(230,236,250,0.78); margin: 0; }
+    .module-card h3 { font-family: var(--font-display-alt); font-size: 18px; margin-bottom: 2px; color: var(--ink); }
+    .module-card p.text-sm { color: var(--text-muted); margin: 0; }
     .module-cta {
       margin-top: 12px;
       font-size: 12.5px;
@@ -146,7 +150,16 @@ interface ModuleCard {
     .module-cta .arrow { transition: transform 0.2s ease; }
     .module-card:hover .module-cta .arrow { transform: translateX(4px); }
 
-    html[data-theme='light'] .module-card { border-color: rgba(0,0,0,0.06); }
+    html[data-theme='dark'] .hero {
+      background:
+        radial-gradient(circle at 15% 20%, rgba(0,242,254,0.35), transparent 55%),
+        radial-gradient(circle at 85% 80%, rgba(255,0,127,0.30), transparent 55%),
+        linear-gradient(135deg, #150e3d 0%, #241a5e 55%, #0d2a3a 100%);
+      border-color: rgba(0,242,254,0.18);
+    }
+    html[data-theme='dark'] .module-card {
+      background-color: #07080f;
+    }
 
     @media (max-width: 768px) {
       .hero { padding: 20px; flex-direction: column; }
@@ -199,5 +212,10 @@ export class DashboardComponent implements AfterViewInit {
     if (h < 12) return 'Good morning';
     if (h < 17) return 'Good afternoon';
     return 'Good evening';
+  }
+
+  isDayTime(): boolean {
+    const h = new Date().getHours();
+    return h < 17;
   }
 }

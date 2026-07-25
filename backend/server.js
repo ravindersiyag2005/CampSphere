@@ -59,6 +59,8 @@ app.use('/api/chat', require('./routes/chatRoutes'));
 app.use('/api/posts', require('./routes/postRoutes'));
 app.use('/api/admin', require('./routes/adminRoutes'));
 
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 app.use((err, req, res, next) => {
   console.error(err);
   res.status(err.status || 500).json({ message: err.message || 'Server error' });

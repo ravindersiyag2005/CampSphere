@@ -7,6 +7,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { ToastService } from '../../core/services/toast.service';
 import { AnimationService } from '../../core/services/animation.service';
 import { SocketService } from '../../core/services/socket.service';
+import { environment } from '../../../environments/environment';
 
 interface Post {
   _id: string;
@@ -78,11 +79,11 @@ interface Post {
           <!-- Post Cards -->
           <div class="post-card card" *ngFor="let post of posts" #postCard>
             <div class="post-header">
-              <div class="user-avatar" [style.background-color]="post.uploadedBy.avatarColor">
-                {{ post.uploadedBy.name.substring(0, 1).toUpperCase() }}
+              <div class="user-avatar" [style.background-color]="post.uploadedBy?.avatarColor || '#888'">
+                {{ (post.uploadedBy?.name || 'U').substring(0, 1).toUpperCase() }}
               </div>
               <div class="user-info">
-                <span class="user-name">{{ post.uploadedBy.name }}</span>
+                <span class="user-name">{{ post.uploadedBy?.name || 'Unknown User' }}</span>
                 <span class="post-time">{{ formatTime(post.createdAt) }}</span>
               </div>
               <button 
@@ -96,10 +97,15 @@ interface Post {
             </div>
 
             <!-- Image Area with Double Click to Like and click to zoom -->
-            <div class="image-wrapper" (dblclick)="triggerDoubleLike(post)" (click)="openLightbox(post.imageUrl)">
-              <img [src]="post.imageUrl" alt="Campus moment" class="post-img" />
-              <div class="double-like-heart" [class.active]="post.likeHeartActive">❤️</div>
-              <div class="zoom-indicator">🔍 View Fullsize</div>
+            <div class="image-wrapper" (dblclick)="triggerDoubleLike(post)" (click)="openLightbox(getFileUrl(post.imageUrl))">
+              <img [src]="getFileUrl(post.imageUrl)" alt="Campus moment" class="post-img" />
+              <div class="double-like-heart" [class.active]="post.likeHeartActive">
+                <svg viewBox="0 0 24 24" class="double-like-svg"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+              </div>
+              <div class="zoom-indicator">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon-sm" style="margin-right: 4px; vertical-align: text-bottom;"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path></svg>
+                View Fullsize
+              </div>
             </div>
 
             <!-- Post Details -->
@@ -107,26 +113,30 @@ interface Post {
               <div class="actions-bar">
                 <ng-container *ngIf="activeTab === 'public'">
                   <button class="action-btn" [class.liked]="post.liked" (click)="toggleLike(post)">
-                    {{ post.liked ? '❤️' : '🤍' }} <span>{{ post.likes.length }}</span>
+                    <svg *ngIf="!post.liked" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                    <svg *ngIf="post.liked" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" class="icon heart-filled"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                    <span>{{ post.likes.length }}</span>
                   </button>
                   <button class="action-btn comment-trigger" (click)="openComments(post)">
-                    💬 <span>{{ post.comments.length }}</span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+                    <span>{{ post.comments.length }}</span>
                   </button>
                 </ng-container>
                 <button class="action-btn ml-auto" [class.ml-auto]="activeTab === 'public'" (click)="downloadImage(post.imageUrl, 'photoholic-' + post._id + '.jpg')" title="Download high quality">
-                  ⬇️ Download
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                  <span>Download</span>
                 </button>
               </div>
 
               <div class="caption-block" *ngIf="post.caption">
-                <span class="caption-user">{{ post.uploadedBy.name }}</span>
+                <span class="caption-user">{{ post.uploadedBy?.name || 'Unknown User' }}</span>
                 <span class="caption-text">{{ post.caption }}</span>
               </div>
 
               <!-- Quick Comments Preview -->
               <div class="comments-preview" *ngIf="post.comments.length > 0">
                 <div class="preview-comment" *ngFor="let comm of post.comments.slice(-2)">
-                  <span class="comment-user">{{ comm.commentedBy.name }}</span>
+                  <span class="comment-user">{{ comm.commentedBy?.name || 'Unknown User' }}</span>
                   <span class="comment-text">{{ comm.text }}</span>
                 </div>
                 <button 
@@ -163,7 +173,9 @@ interface Post {
                 />
                 
                 <div *ngIf="!imagePreview" class="upload-placeholder">
-                  <span class="upload-icon">📷</span>
+                  <span class="upload-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon-lg"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                  </span>
                   <span class="btn btn-outline btn-sm">Browse Image</span>
                   <span class="text-xs text-muted mt-4">JPG, PNG, WEBP, or GIF up to 15MB</span>
                 </div>
@@ -226,7 +238,7 @@ interface Post {
                 [disabled]="!selectedFile || uploading()"
               >
                 <span class="spinner" *ngIf="uploading()"></span>
-                {{ uploading() ? 'Posting...' : 'Post Momemt' }}
+                {{ uploading() ? 'Posting...' : 'Post Moment' }}
               </button>
             </div>
           </form>
@@ -249,12 +261,12 @@ interface Post {
             </div>
 
             <div class="comment-item" *ngFor="let comm of selectedPost()?.comments">
-              <div class="comment-avatar" [style.background-color]="comm.commentedBy._id === currentUser?.id ? '#6c5ce7' : '#00b8a9'">
-                {{ comm.commentedBy.name.substring(0,1).toUpperCase() }}
+              <div class="comment-avatar" [style.background-color]="comm.commentedBy?._id === currentUser?.id ? '#6c5ce7' : '#00b8a9'">
+                {{ (comm.commentedBy?.name || 'U').substring(0,1).toUpperCase() }}
               </div>
               <div class="comment-body">
                 <div class="comment-meta">
-                  <span class="commenter-name">{{ comm.commentedBy.name }}</span>
+                  <span class="commenter-name">{{ comm.commentedBy?.name || 'Unknown User' }}</span>
                   <span class="commenter-time">{{ formatTime(comm.createdAt) }}</span>
                 </div>
                 <p class="comment-text-content">{{ comm.text }}</p>
@@ -289,6 +301,12 @@ interface Post {
     </div>
   `,
   styles: [`
+    .icon { width: 16px; height: 16px; }
+    .icon-sm { width: 14px; height: 14px; }
+    .icon-lg { width: 40px; height: 40px; color: var(--text-muted); margin-bottom: 8px; display: block; }
+    .heart-filled { color: #ff4757; fill: #ff4757; stroke: #ff4757; }
+    .double-like-svg { width: 100px; height: 100px; color: #ff4757; fill: #ff4757; filter: drop-shadow(0 10px 20px rgba(255, 71, 87, 0.4)); }
+
     .photoholic-container {
       max-width: 600px;
       margin: 0 auto;
@@ -318,24 +336,28 @@ interface Post {
       gap: 24px;
     }
 
-    .dropdown-menu { position: absolute; top: 100%; left: 0; right: 0; background: var(--surface); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; z-index: 10; max-height: 200px; overflow-y: auto; padding: 8px 0; margin-top: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
+    .dropdown-menu { position: absolute; top: 100%; left: 0; right: 0; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; z-index: 10; max-height: 200px; overflow-y: auto; padding: 8px 0; margin-top: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    html[data-theme='dark'] .dropdown-menu { border-color: rgba(255,255,255,0.1); box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
     .dropdown-item { padding: 8px 16px; cursor: pointer; transition: background 0.2s; }
-    .dropdown-item:hover { background: rgba(255,255,255,0.05); }
+    .dropdown-item:hover { background: var(--surface-alt); }
+    html[data-theme='dark'] .dropdown-item:hover { background: rgba(255,255,255,0.05); }
 
     .post-card {
       padding: 0;
       overflow: hidden;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      background: var(--shell);
+      border: 1px solid var(--border);
+      background: var(--surface);
       border-radius: 16px;
     }
+    html[data-theme='dark'] .post-card { background: #0b0e14; border-color: rgba(255, 255, 255, 0.08); }
 
     .post-header {
       display: flex;
       align-items: center;
       padding: 14px 16px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      border-bottom: 1px solid var(--border);
     }
+    html[data-theme='dark'] .post-header { border-color: rgba(255, 255, 255, 0.05); }
 
     .user-avatar {
       width: 38px;
@@ -383,18 +405,18 @@ interface Post {
     .image-wrapper {
       position: relative;
       width: 100%;
-      background: #090a14;
+      aspect-ratio: 1 / 1;
+      background: var(--surface-alt);
       overflow: hidden;
       cursor: pointer;
     }
+    html[data-theme='dark'] .image-wrapper { background: #090a14; }
 
     .post-img {
       width: 100%;
-      height: auto;
-      max-height: 550px;
-      object-fit: contain;
+      height: 100%;
+      object-fit: cover;
       display: block;
-      margin: 0 auto;
     }
 
     .double-like-heart {
@@ -425,8 +447,8 @@ interface Post {
     }
 
     .action-btn {
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: var(--surface-alt);
+      border: 1px solid var(--border);
       border-radius: 20px;
       padding: 6px 14px;
       color: var(--text);
@@ -438,11 +460,13 @@ interface Post {
       cursor: pointer;
       transition: all 0.2s;
     }
+    html[data-theme='dark'] .action-btn { background: rgba(255, 255, 255, 0.04); border-color: rgba(255, 255, 255, 0.08); }
 
     .action-btn:hover {
-      background: rgba(255, 255, 255, 0.08);
+      background: var(--border);
       transform: translateY(-1px);
     }
+    html[data-theme='dark'] .action-btn:hover { background: rgba(255, 255, 255, 0.08); }
 
     .action-btn.liked {
       background: rgba(255, 107, 91, 0.1);
@@ -464,10 +488,11 @@ interface Post {
       display: flex;
       flex-direction: column;
       gap: 6px;
-      border-top: 1px solid rgba(255, 255, 255, 0.04);
+      border-top: 1px solid var(--border);
       padding-top: 12px;
       font-size: 13px;
     }
+    html[data-theme='dark'] .comments-preview { border-color: rgba(255, 255, 255, 0.04); }
 
     .preview-comment {
       line-height: 1.4;
@@ -507,10 +532,11 @@ interface Post {
       width: 100%;
       max-width: 460px;
       padding: 24px;
-      background: var(--shell);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: var(--surface);
+      border: 1px solid var(--border);
       border-radius: 16px;
     }
+    html[data-theme='dark'] .modal-card { background: #0b0e14; border-color: rgba(255, 255, 255, 0.1); }
 
     .modal-header {
       display: flex;
@@ -537,7 +563,7 @@ interface Post {
     }
 
     .upload-zone {
-      border: 2px dashed rgba(255, 255, 255, 0.15);
+      border: 2px dashed var(--border);
       border-radius: 12px;
       aspect-ratio: 16 / 9;
       display: flex;
@@ -545,9 +571,10 @@ interface Post {
       justify-content: center;
       cursor: pointer;
       overflow: hidden;
-      background: rgba(255, 255, 255, 0.02);
+      background: var(--surface-alt);
       transition: border-color 0.2s;
     }
+    html[data-theme='dark'] .upload-zone { border-color: rgba(255, 255, 255, 0.15); background: rgba(255, 255, 255, 0.02); }
 
     .upload-zone:hover {
       border-color: var(--violet);
@@ -595,14 +622,15 @@ interface Post {
       width: 100%;
       max-width: 420px;
       height: 100%;
-      background: var(--shell);
-      border-left: 1px solid rgba(255, 255, 255, 0.08);
+      background: var(--surface);
+      border-left: 1px solid var(--border);
       border-radius: 0;
       padding: 0;
       display: flex;
       flex-direction: column;
       animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
+    html[data-theme='dark'] .comments-sheet { background: #0b0e14; border-color: rgba(255, 255, 255, 0.08); }
 
     .sheet-header {
       padding: 16px;
@@ -973,7 +1001,7 @@ export class PhotoholicComponent implements OnInit, OnDestroy {
 
   canDelete(post: Post): boolean {
     if (!this.currentUser) return false;
-    return post.uploadedBy._id === this.currentUser.id || this.currentUser.role === 'admin';
+    return post.uploadedBy?._id === this.currentUser.id || this.currentUser.role === 'admin';
   }
 
   deletePost(id: string) {
@@ -1226,11 +1254,20 @@ export class PhotoholicComponent implements OnInit, OnDestroy {
   }
 
   downloadImage(url: string, filename: string) {
+    const fullUrl = this.getFileUrl(url);
     const a = document.createElement('a');
-    a.href = url;
+    a.href = fullUrl;
     a.download = filename;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
+  }
+
+  getFileUrl(path: string | null): string {
+    if (!path) return '';
+    if (path.startsWith('http')) return path;
+    const cleanPath = path.replace(/\\/g, '/');
+    const apiBase = environment.apiUrl.replace('/api', '');
+    return `${apiBase}${cleanPath.startsWith('/') ? cleanPath : '/' + cleanPath}`;
   }
 }

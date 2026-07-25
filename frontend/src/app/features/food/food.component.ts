@@ -89,7 +89,10 @@ import { StaggerInDirective } from '../../shared/components/stagger-in.directive
           </div>
 
           <div class="flex justify-between items-center mt-16">
-            <button class="btn btn-ghost btn-sm" (click)="upvote(s, $event)">▲ {{ s.upvotes.length }}</button>
+            <button class="btn-upvote" [class.active]="auth.currentUser() && s.upvotes.includes(auth.currentUser()?.id)" (click)="upvote(s, $event)">
+              <svg viewBox="0 0 24 24"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
+              {{ s.upvotes.length }}
+            </button>
             <div class="rate-widget">
               <button class="star-btn" *ngFor="let n of [1,2,3,4,5]" (click)="rate(s, n, $event)">{{ n <= (myRatings[s._id] || 0) ? '★' : '☆' }}</button>
             </div>

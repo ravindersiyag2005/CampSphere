@@ -38,7 +38,7 @@ exports.register = async (req, res) => {
     // Fallback to the default code if the environment variable is missing (useful for local development)
     const adminSecret = process.env.ADMIN_SECRET_CODE || 'CAMPSPHERE_ADMIN_2026';
     
-    if (adminCode && adminCode === adminSecret) {
+    if (adminCode && adminCode.trim() === adminSecret) {
       role = 'admin';
     }
 
@@ -133,7 +133,10 @@ exports.updateAvatar = async (req, res) => {
     if (!req.file) {
       return res.status(400).json({ message: 'No image file uploaded' });
     }
-    const avatarUrl = req.file.path;
+    let avatarUrl = req.file.path;
+    if (!avatarUrl.startsWith('http')) {
+      avatarUrl = '/uploads/' + req.file.filename;
+    }
     const user = await User.findByIdAndUpdate(req.user._id, { avatarUrl }, { new: true });
     res.json({ user: sanitizeUser(user) });
   } catch (err) {

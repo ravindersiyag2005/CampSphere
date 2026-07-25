@@ -209,9 +209,12 @@ interface RoomAliasItem {
     }
 
     .settings-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+    }
+    html[data-theme='dark'] .settings-card {
       background: rgba(15, 17, 26, 0.65);
       backdrop-filter: blur(12px);
-      border: 1px solid var(--border);
     }
     .settings-card h2 { font-size: 20px; font-family: var(--font-display-alt); margin-bottom: 2px; }
     .card-subtitle { font-size: 13.5px; color: var(--text-muted); }
@@ -223,6 +226,10 @@ interface RoomAliasItem {
       gap: 20px;
       padding: 16px;
       border-radius: var(--radius-md);
+      background: var(--surface-alt);
+      border: 1px solid var(--border);
+    }
+    html[data-theme='dark'] .profile-avatar-section {
       background: rgba(255, 255, 255, 0.02);
       border: 1px solid rgba(255, 255, 255, 0.03);
     }
@@ -245,8 +252,11 @@ interface RoomAliasItem {
       display: flex;
       align-items: center;
       justify-content: center;
-      border: 2px solid rgba(255, 255, 255, 0.1);
+      border: 2px solid var(--border);
       background-repeat: no-repeat;
+    }
+    html[data-theme='dark'] .avatar-preview {
+      border: 2px solid rgba(255, 255, 255, 0.1);
     }
     .avatar-preview .initials {
       font-size: 22px;
@@ -304,9 +314,13 @@ interface RoomAliasItem {
       gap: 12px;
     }
     .alias-item {
+      background: var(--surface-alt);
+      border: 1px solid var(--border);
+      padding: 14px 18px;
+    }
+    html[data-theme='dark'] .alias-item {
       background: rgba(255, 255, 255, 0.02);
       border: 1px solid rgba(255, 255, 255, 0.04);
-      padding: 14px 18px;
     }
     .alias-row {
       display: flex;

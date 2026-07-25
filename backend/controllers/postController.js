@@ -4,7 +4,10 @@ exports.createPost = async (req, res) => {
   try {
     const { caption, isPrivate, sharedWith } = req.body;
     if (!req.file) return res.status(400).json({ message: 'Photo is required' });
-    const imageUrl = req.file.path;
+    let imageUrl = req.file.path;
+    if (!imageUrl.startsWith('http')) {
+      imageUrl = '/uploads/' + req.file.filename;
+    }
     const post = await Post.create({
       imageUrl,
       caption,

@@ -192,7 +192,10 @@ exports.checkUnreadDMs = async (req, res) => {
 exports.uploadAttachment = async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
-    const fileUrl = req.file.path;
+    let fileUrl = req.file.path;
+    if (!fileUrl.startsWith('http')) {
+      fileUrl = '/uploads/' + req.file.filename;
+    }
     const type = req.file.mimetype === 'application/pdf' ? 'pdf' : 'image';
     res.json({
       fileUrl,

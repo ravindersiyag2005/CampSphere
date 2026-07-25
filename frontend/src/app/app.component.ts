@@ -93,10 +93,6 @@ import { environment } from '../environments/environment';
             Photoholic
             <span class="unread-dot" *ngIf="hasUnreadPhotoholic()"></span>
           </a>
-          <a routerLink="/settings" routerLinkActive="active" class="nav-link" (click)="sidebarOpen.set(false)">
-            <svg class="sidebar-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-            Settings
-          </a>
           <a *ngIf="auth.isAdmin()" routerLink="/admin" routerLinkActive="active" class="nav-link nav-link-admin" (click)="sidebarOpen.set(false)">
             <svg class="sidebar-icon" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
             Admin Panel
@@ -111,13 +107,15 @@ import { environment } from '../environments/environment';
         </button>
 
         <div class="sidebar-footer" *ngIf="auth.currentUser() as u">
-          <div class="avatar avatar-sm" [style.background-color]="u.avatarColor" [style.background-image]="u.avatarUrl ? 'url(' + getAvatarUrl(u.avatarUrl) + ')' : ''" [style.background-size]="'cover'" [style.background-position]="'top center'" [style.background-repeat]="'no-repeat'" (click)="u.avatarUrl ? previewOpen.set(true) : null" [style.cursor]="u.avatarUrl ? 'pointer' : 'default'" [title]="u.avatarUrl ? 'Click to preview' : ''">
-            <span *ngIf="!u.avatarUrl">{{ initials(u.name) }}</span>
-          </div>
-          <div class="who">
-            <div class="who-name">{{ u.name }}</div>
-            <div class="who-id">{{ u.collegeId }}</div>
-          </div>
+          <a routerLink="/settings" class="footer-profile-link" (click)="sidebarOpen.set(false)" title="Go to Settings">
+            <div class="avatar avatar-sm" [style.background-color]="u.avatarColor" [style.background-image]="u.avatarUrl ? 'url(' + getAvatarUrl(u.avatarUrl) + ')' : ''" [style.background-size]="'cover'" [style.background-position]="'top center'" [style.background-repeat]="'no-repeat'">
+              <span *ngIf="!u.avatarUrl">{{ initials(u.name) }}</span>
+            </div>
+            <div class="who">
+              <div class="who-name">{{ u.name }}</div>
+              <div class="who-id">{{ u.collegeId }}</div>
+            </div>
+          </a>
           <button class="btn-icon-plain" (click)="auth.logout()" title="Log out">⏻</button>
         </div>
       </aside>
@@ -143,15 +141,19 @@ import { environment } from '../environments/environment';
     .sidebar {
       width: 250px;
       flex-shrink: 0;
-      background: linear-gradient(180deg, #04050a 0%, #080b12 100%);
-      border-right: 1px solid rgba(0, 242, 254, 0.12);
-      color: #fff;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      color: var(--ink);
       display: flex;
       flex-direction: column;
       padding: 22px 16px;
       position: sticky;
       top: 0;
       height: 100vh;
+    }
+    html[data-theme='dark'] .sidebar {
+      background: linear-gradient(180deg, #04050a 0%, #080b12 100%);
+      border-right-color: rgba(0, 242, 254, 0.12);
     }
 
     .brand {
@@ -167,18 +169,17 @@ import { environment } from '../environments/environment';
       stroke-width: 2;
       stroke-linecap: round;
       stroke-linejoin: round;
-      fill: rgba(0, 242, 254, 0.15);
-      filter: drop-shadow(0 0 8px rgba(0, 242, 254, 0.6));
+      fill: var(--violet-light);
       flex-shrink: 0;
     }
     .brand-text {
       font-family: var(--font-mono);
       font-size: 17px;
       font-weight: 700;
-      color: #e2e8f0;
+      color: var(--ink);
       letter-spacing: 0.04em;
     }
-    .brand-text b { color: var(--violet); font-weight: 800; text-shadow: 0 0 10px rgba(0,242,254,0.8); }
+    .brand-text b { color: var(--violet); font-weight: 800; }
 
     .nav-link {
       display: flex;
@@ -186,10 +187,10 @@ import { environment } from '../environments/environment';
       gap: 12px;
       padding: 11px 14px;
       border-radius: var(--radius-md);
-      color: rgba(200, 220, 255, 0.65);
+      color: var(--text-muted);
       font-size: 14px;
       font-weight: 500;
-      transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+      transition: all 0.2s ease;
       border: 1px solid transparent;
     }
     .sidebar-icon {
@@ -200,27 +201,30 @@ import { environment } from '../environments/environment';
       stroke-linecap: round;
       stroke-linejoin: round;
       fill: none;
-      transition: stroke 0.15s ease, filter 0.15s ease;
+      transition: stroke 0.2s ease;
       flex-shrink: 0;
     }
-    .nav-link:hover { background: rgba(0,242,254,0.07); color: var(--violet); border-color: rgba(0,242,254,0.15); }
+    .nav-link:hover { 
+      background: var(--surface-alt); 
+      color: var(--ink); 
+    }
     .nav-link:hover .sidebar-icon {
-      stroke: var(--violet);
-      filter: drop-shadow(0 0 4px rgba(0, 242, 254, 0.6));
+      stroke: var(--ink);
     }
     .nav-link.active {
-      background: rgba(0, 242, 254, 0.1);
-      border-color: rgba(0, 242, 254, 0.3);
+      background: var(--violet-light);
       color: var(--violet);
-      box-shadow: 0 0 12px rgba(0,242,254,0.2) inset;
-      text-shadow: 0 0 6px rgba(0,242,254,0.4);
+    }
+    .nav-link.active .sidebar-icon {
+      stroke: var(--violet);
     }
     .nav { display: flex; flex-direction: column; gap: 4px; flex: 1; }
     .nav-link-admin.active {
-      background: rgba(243, 85, 136, 0.12);
-      border-color: rgba(243, 85, 136, 0.3);
-      color: var(--coral);
-      box-shadow: 0 0 12px rgba(243,85,136,0.2) inset;
+      background: rgba(225, 29, 72, 0.1);
+      color: var(--coral-deep);
+    }
+    .nav-link-admin.active .sidebar-icon {
+      stroke: var(--coral-deep);
     }
     .unread-dot {
       display: inline-block;
@@ -229,7 +233,7 @@ import { environment } from '../environments/environment';
       background: var(--coral);
       border-radius: 50%;
       margin-left: auto;
-      box-shadow: 0 0 8px var(--coral), 0 0 14px rgba(243,85,136,0.5);
+      box-shadow: 0 0 8px var(--coral-light, rgba(251, 113, 133, 0.5));
       animation: pulse-dot 1.5s ease-in-out infinite;
     }
     @keyframes pulse-dot {
@@ -246,22 +250,23 @@ import { environment } from '../environments/environment';
       cursor: pointer;
       padding: 8px 10px;
       border-radius: var(--radius-md);
-      color: rgba(200, 220, 255, 0.7);
+      color: var(--text-muted);
       font-size: 13px;
       font-weight: 500;
       width: 100%;
+      transition: all 0.2s ease;
     }
-    .theme-toggle:hover { background: rgba(0,242,254,0.07); color: var(--violet); }
+    .theme-toggle:hover { background: var(--surface-alt); color: var(--ink); }
     .theme-toggle-track {
       width: 42px;
       height: 24px;
       border-radius: 999px;
-      background: rgba(255,255,255,0.14);
+      background: var(--border);
       position: relative;
       flex-shrink: 0;
       transition: background 0.2s ease;
     }
-    .theme-toggle-track.is-dark { background: linear-gradient(135deg, var(--violet), var(--violet-deep)); }
+    .theme-toggle-track.is-dark { background: var(--violet); }
     .theme-toggle-thumb {
       position: absolute;
       top: 2px;
@@ -276,6 +281,7 @@ import { environment } from '../environments/environment';
       font-size: 11px;
       transition: transform 0.25s cubic-bezier(.4,0,.2,1);
       transform: translateX(0);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
     .theme-toggle-track.is-dark .theme-toggle-thumb { transform: translateX(18px); }
 
@@ -284,23 +290,26 @@ import { environment } from '../environments/environment';
       align-items: center;
       gap: 10px;
       padding: 12px 10px 4px;
-      border-top: 1px solid rgba(255,255,255,0.08);
+      border-top: 1px solid var(--border);
       margin-top: 10px;
     }
+    .footer-profile-link { display: flex; align-items: center; gap: 10px; flex: 1; text-decoration: none; min-width: 0; padding: 6px; margin: -6px; border-radius: var(--radius-sm); transition: background 0.15s; cursor: pointer; }
+    .footer-profile-link:hover { background: var(--surface-alt); }
     .who { flex: 1; min-width: 0; }
-    .who-name { font-size: 13.5px; font-weight: 600; color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .who-id { font-size: 11.5px; font-family: var(--font-mono); color: rgba(255,255,255,0.5); }
+    .who-name { font-size: 13.5px; font-weight: 600; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; transition: color 0.15s; }
+    .who-id { font-size: 11.5px; font-family: var(--font-mono); color: var(--text-faint); }
     .btn-icon-plain {
-      background: rgba(255,255,255,0.08);
+      background: transparent;
       border: none;
-      color: #fff;
+      color: var(--text-muted);
       width: 32px;
       height: 32px;
       border-radius: 50%;
       cursor: pointer;
       font-size: 14px;
+      transition: all 0.2s ease;
     }
-    .btn-icon-plain:hover { background: rgba(255,255,255,0.18); }
+    .btn-icon-plain:hover { background: var(--surface-alt); color: var(--danger); }
 
     .mobile-header { display: none; }
     .sidebar-backdrop { display: none; }
@@ -313,12 +322,12 @@ import { environment } from '../environments/environment';
         justify-content: space-between;
         height: 60px;
         padding: 0 16px;
-        background: linear-gradient(180deg, #04050a 0%, #080b12 100%);
-        border-bottom: 1px solid rgba(0, 242, 254, 0.12);
+        background: var(--surface);
+        border-bottom: 1px solid var(--border);
         position: sticky;
         top: 0;
         z-index: 999;
-        color: #fff;
+        color: var(--ink);
       }
       .mobile-brand {
         display: flex;
@@ -328,7 +337,7 @@ import { environment } from '../environments/environment';
       .menu-btn {
         background: none;
         border: none;
-        color: #fff;
+        color: var(--ink);
         font-size: 24px;
         cursor: pointer;
         padding: 4px;
@@ -363,7 +372,7 @@ import { environment } from '../environments/environment';
         z-index: 1001;
         transform: translateX(-100%);
         transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        box-shadow: 4px 0 24px rgba(0, 0, 0, 0.6);
+        box-shadow: var(--shadow-lg);
       }
       
       .sidebar.open {
@@ -380,8 +389,8 @@ import { environment } from '../environments/environment';
     .lightbox-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(4, 5, 10, 0.94);
-      backdrop-filter: blur(16px);
+      background: rgba(15, 23, 42, 0.9);
+      backdrop-filter: blur(8px);
       z-index: 10000;
       display: flex;
       align-items: center;
@@ -423,12 +432,7 @@ import { environment } from '../environments/environment';
     .lightbox-caption {
       font-family: var(--font-mono);
       font-size: 13.5px;
-      color: var(--violet);
-      text-shadow: 0 0 8px rgba(0, 242, 254, 0.5);
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
+      color: #cbd5e1;
     }
     @keyframes fadeIn {
       from { opacity: 0; }
